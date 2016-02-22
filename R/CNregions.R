@@ -47,8 +47,8 @@ CNregions=function(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL, fr
                             end=seg[,4]))
 
       overlap=findOverlaps(gr.cnv, gr.seg)
-      queryHits=overlap@queryHits
-      subjectHits=overlap@subjectHits
+      queryHits=queryHits(overlap)
+      subjectHits=subjectHits(overlap)
       start=pmax(seg[subjectHits,3],cnv[queryHits,2])
       end=pmin(seg[subjectHits,4],cnv[queryHits,3])
       seg.length=seg[subjectHits,4]-seg[subjectHits,3]
