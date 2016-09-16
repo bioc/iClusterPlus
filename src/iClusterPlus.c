@@ -1094,15 +1094,18 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
 
   char *transN="N",*transT="T";
   int i, j,kk,pk,pp,s,t;
+  int ij;
   double *btp,*btpb, *EXZt,*tempX,*tempm0,*tempm1,*tempm2,*tempm3,*BOld,*PhivecOld, *XtXdiag;
   double lbd1,lbd4,*lbd2,*lbd3,*lbd5;
   double alpha, beta,absdif;
+  double ninv;
 
   double *xlist[*lenT],*phi[*lenT], *tempB[*lenT],*tempEXZt[*lenT],**xm, **xmt;
 
   /*  printf("lenT = %d %d",lenT[0],iter[0]); */
   alpha = 1;
   beta = 0;
+  ninv = 1.0/(*n);
 
   kk = (*k)*(*k);
   pk = (*p)*(*k);
@@ -1115,7 +1118,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
   tempm0 = dvec(*p);
   tempm1 = dvec(kk);
   tempm2 = dvec(pk);
-  tempm3 = dvec(pp);
+  // tempm3 = dvec(pp);
   BOld = dvec(pk);
   PhivecOld = dvec(*p);
   XtXdiag = dvec(*p);
@@ -1161,15 +1164,17 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
   
   while((*dif) > (*eps) && (*iter) <(*maxiter)){ 
     *iter = *iter + 1;
-    dvcopy(btp,B,pk);
+    /* removed "dvcopy(btp,B,pk);" as it is redundant */
     /*   printf("- iter %d \n", *iter); */
     for(i=0; i< (*k); i++){
       for(j=0; j< (*p); j++){
-	btp[i*(*p)+j] = btp[i*(*p)+j]*Phivec[j];
+	ij = i*(*p)+j; /* ith row, jth column index */
+	/* btp stores Phi^{-1}B; so need to divide not multiply */
+	btp[ij] = B[ij]/Phivec[j];
       }
     }
-    
-    F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,btp,p,btp,p,&beta,btpb,k);
+    /* btp stores Phi^{-1}B; transpose and multiply by B */
+    F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,btp,p,B,p,&beta,btpb,k);
  
     diagplus(btpb,*k,1);
     if((*iter)==0){
@@ -1236,26 +1241,42 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
       /*  dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1)); */
       s = s + pvec[t];
     }
-  
-    F77_CALL(dgemm)(transN,transT,p,p,k,&alpha,EXZt,p,B,p,&beta,tempm3,p);
-    diagv(tempm0,tempm3,*p);
 
-    dvcopy(XtXdiag,xtxdiag,*p);
-    dvsub(XtXdiag,tempm0,*p);
-    dvsub(XtXdiag,tempm0,*p);
-
+    // this block is commented out since the computation can be done more efficiently  
+    // F77_CALL(dgemm)(transN,transT,p,p,k,&alpha,EXZt,p,B,p,&beta,tempm3,p);
+    // diagv(tempm0,tempm3,*p);
+    // 
+    // /* diagonal of t(X) %*% X */
+    // dvcopy(XtXdiag,xtxdiag,*p);
+    // /* diagonal of t(X) %*% X - EXZt%*%t(B) */
+    // dvsub(XtXdiag,tempm0,*p);
+    // /* diagonal of t(X) %*% X - EXZt%*%t(B) - B %*% t(EXZt) */
+    // dvsub(XtXdiag,tempm0,*p);
+    // 
+    // F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,B,p,EZZt,k,&beta,tempm2,p); /* B%*%EZZt */
+    // F77_CALL(dgemm)(transN,transT,p,p,k,&alpha,tempm2,p,B,p,&beta,tempm3,p);
+    // diagv(tempm0,tempm3,*p);
+    // dvadd(XtXdiag,tempm0,*p);
+    // dvscale(XtXdiag,*p,1.0/(*n));
+    // dvcopy(Phivec,XtXdiag,*p);
+    // /*    
+    // if((*iter)==0){
+    //   printf("- Phivec -\n");
+    //   printvec(XtXdiag, 20);
+    // }      
+    
+    /* direct computation of Phivec; don't need matrix product for just the diagonal */
     F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,B,p,EZZt,k,&beta,tempm2,p); /* B%*%EZZt */
-    F77_CALL(dgemm)(transN,transT,p,p,k,&alpha,tempm2,p,B,p,&beta,tempm3,p);
-    diagv(tempm0,tempm3,*p);
-    dvadd(XtXdiag,tempm0,*p);
-    dvscale(XtXdiag,*p,1.0/(*n));
-    dvcopy(Phivec,XtXdiag,*p);
-    /*    
-    if((*iter)==0){
-      printf("- Phivec -\n");
-      printvec(XtXdiag, 20);
-    }      
-    */
+    for(j=0; j< (*p); j++){             /* j is the row index */
+      Phivec[j] = xtxdiag[j];           /* initialize Phivec  */
+      for(i=0; i< (*k); i++){           /* i the column index */
+	ij = i*(*p)+j;                  /* jth row ith col index */
+        /* inner product of jth row of (B%*%EZZt - 2*X%*%EZ) and jt row of B */
+	Phivec[j] = Phivec[j] + (tempm2[ij] - 2.0*EXZt[ij])*B[ij];
+      }
+      /* divide by n */
+      Phivec[j] = Phivec[j]*ninv;
+    }
 
     *dif = 0;
     
@@ -1283,7 +1304,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
   Free(tempm0);
   Free(tempm1);
   Free(tempm2);
-  Free(tempm3);
+  // Free(tempm3);
   Free(BOld);
   Free(PhivecOld);
   Free(XtXdiag);
