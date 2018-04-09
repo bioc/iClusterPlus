@@ -11,10 +11,25 @@ tune.iClusterPlus = function(cpus=8,dt1,dt2=NULL,dt3=NULL,dt4=NULL,type=c("gauss
   K=2,alpha=c(1,1,1,1),n.lambda=NULL,scale.lambda=c(1,1,1,1),n.burnin=200,n.draw=200,maxiter=20,sdev=0.05,eps=1.0e-4){
 
 #  require(parallel)
+  dttype = c("gaussian","binomial","poisson","multinomial")
   if(missing(dt1)){
     stop("Error: dt1 is missing!\n")
   }
 
+  if(!all(type %in% dttype)){
+      cat("Error: ",type[!all(type %in% dttype)],"\n")
+      stop("Allowed data types are gaussian, binomial, poisson and multinomial. \n")
+  }
+
+  isNULL = c(is.null(dt1),is.null(dt2),is.null(dt3),is.null(dt4))
+  if(any(diff(isNULL) == -1)){
+      stop("Error: dt1 to dt4 must be assigned in order.\n")
+  }
+
+  if(sum(!isNULL) > length(type)){
+      stop("Error:  data type is missing for some data. \n")
+  }
+  
   lbd = list()
   lbd[[1]] = 1:1000
   lbd[[2]] = c(8, 13, 21, 34, 55, 89, 144, 233, 377, 610)

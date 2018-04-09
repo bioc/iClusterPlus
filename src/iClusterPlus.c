@@ -14,6 +14,7 @@
 #include <R_ext/Rdynload.h>
 #include <R_ext/BLAS.h> 
 #include <R_ext/Lapack.h>
+#include "iClusterPlus.h"
 /* #include <Rinternals.h>
    #include <R_ext/Rdynload.h>
    #include <R_ext/Utils.h>
@@ -469,20 +470,6 @@ void dmtranm(double **m1, double **m2, int m2row, int m2col){
   }
 }
 
-typedef struct{
-  int *type;
-  int *p;  /* p variable */
-  int *k;  /* k latent class of subject */
-  int *c;  /* c class of categoriable variable (subject)  */
-  double *alpha;
-  double *beta;
-  double *con; /* continous variable, should be a px1 vector */
-  int *cat;   /* categorical or count variable, should be a px1 vector  */
-  int *class;  /* the actual values of multinomial values, from 0 to (max-number-of-class - 1) */
-  int *nclass; /* Number of class for each p variable, across samples */
-  double *sigma2; /* for linear regression case */
-}dataType;
-
 void fillData(dataType *dt,double *alpha,double *beta,double *con,int *cat,int *class,int *nclass,
 	      double *sigma2,int *p,int *k,int *c,int *type){
   dt->type = type;
@@ -495,6 +482,22 @@ void fillData(dataType *dt,double *alpha,double *beta,double *con,int *cat,int *
   dt->cat = cat;
   dt->class = class;
   dt->nclass = nclass;
+  dt->sigma2 = sigma2;
+}
+
+/* used for iClusterBayes, which only modle normal, poisson and binomial data */
+void fillData3(dataType *dt,double *alpha,double *beta,double *con,int *cat,
+	      double *sigma2,int *p,int *k,int *type){
+  dt->type = type;
+  dt->p = p;
+  dt->k = k; 
+  /* dt->c = c; */
+  dt->alpha = alpha;
+  dt->beta = beta;
+  dt->con = con;
+  dt->cat = cat;
+  /* dt->class = class;
+     dt->nclass = nclass; */
   dt->sigma2 = sigma2;
 }
 

@@ -1,2 +1,2 @@
 useDynLib(iClusterPlus)
-export(compute.pod,plotiCluster,iCluster,iCluster2,tune.iCluster2,iClusterPlus,tune.iClusterPlus,plotHeatmap,getBIC,getDevR,getClusters,CNregions,iManual)
+export(compute.pod,plotiCluster,iCluster,iCluster2,tune.iCluster2,iClusterPlus,tune.iClusterPlus,plotHeatmap,getBIC,getDevR,getClusters,CNregions,iClusterBayes,tune.iClusterBayes,plotHMBayes,iManual)

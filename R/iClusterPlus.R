@@ -98,7 +98,8 @@ dataType <- function(x,type,K){
   }else{
     stop("Error: type is undefined! type is one of c('gaussian','binomial','poisson','multinomial').")
   }
-  list(n=n,p=p,C=C,class=class,nclass=nclass,Alpha=Alpha,Beta=Beta,sigma2=sigma2,type=ty,con=con,cat=cat)
+   #list(n=n,p=p,C=C,class=class,nclass=nclass,Alpha=Alpha,Beta=Beta,sigma2=sigma2,type=ty,con=con,cat=cat)
+   list(n=n,p=p,C=C,class=class,nclass=nclass,Alpha=Alpha,Beta=Beta,sigma2=sigma2,gamma=rep(1,p),Ratio=rep(0,p),acsGamma=rep(0,p),acsBeta=rep(0,p),type=ty,con=con,cat=cat)
 }
 
 #U = p x c
@@ -232,26 +233,26 @@ totalBIC = function(Data,meanZ,ndt,K){
         as.double(Data[[i]]$Beta),as.double(Data[[i]]$sigma2),as.double(Data[[i]]$con),
         as.integer(Data[[i]]$n),as.integer(Data[[i]]$p),as.integer(K),PACKAGE="iClusterPlus")
       BIC = BIC - 2*fit1$loglike + sum(Data[[i]]$Beta != 0)*log(Data[[i]]$n * Data[[i]]$p)
-      #cat(-2*fit1$loglike,"\n")
+      #BIC = BIC - 2*fit1$loglike + (Data[[i]]$p+sum(Data[[i]]$Beta != 0))*log(Data[[i]]$n)
     }else if(Data[[i]]$type == 2){ # binomial #
       fit2 = .C("logBinomAll",loglike = double(1),as.double(meanZ),as.double(Data[[i]]$Alpha),
         as.double(Data[[i]]$Beta),as.integer(Data[[i]]$cat),
         as.integer(Data[[i]]$n),as.integer(Data[[i]]$p),as.integer(K),PACKAGE="iClusterPlus")
       BIC = BIC - 2*fit2$loglike + sum(Data[[i]]$Beta != 0)*log(Data[[i]]$n * Data[[i]]$p)
-      #cat(-2*fit2$loglike,"\n")
+      #BIC = BIC - 2*fit2$loglike + (Data[[i]]$p+sum(Data[[i]]$Beta != 0))*log(Data[[i]]$n)
     }else if(Data[[i]]$type == 3){ # Poisson #
       fit3 = .C("logPoissonAll",loglike = double(1),as.double(meanZ),as.double(Data[[i]]$Alpha),
         as.double(Data[[i]]$Beta),as.integer(Data[[i]]$cat),
         as.integer(Data[[i]]$n),as.integer(Data[[i]]$p),as.integer(K),PACKAGE="iClusterPlus")
       BIC = BIC - 2*fit3$loglike + sum(Data[[i]]$Beta != 0)*log(Data[[i]]$n * Data[[i]]$p)
-      #cat(-2*fit3$loglike,"\n")
+      #BIC = BIC - 2*fit3$loglike + (Data[[i]]$p+sum(Data[[i]]$Beta != 0))*log(Data[[i]]$n)
     }else { # Multinomial, Beta must be t(Beta) for logMult function in giCluster.c #
       fit4 = .C("logMultAll",loglike = double(1),as.double(meanZ),as.double(Data[[i]]$Alpha),
         as.double(t(Data[[i]]$Beta)),as.integer(Data[[i]]$cat),as.integer(Data[[i]]$class),
         as.integer(Data[[i]]$nclass),as.integer(Data[[i]]$n),as.integer(Data[[i]]$p),
         as.integer(Data[[i]]$C),as.integer(K),PACKAGE="iClusterPlus")
       BIC = BIC - 2*fit4$loglike + sum(Data[[i]]$Beta != 0)*log(Data[[i]]$n * Data[[i]]$p)/Data[[i]]$C
-      #cat(-2*fit4$loglike,"\n")
+      #BIC = BIC - 2*fit4$loglike + (Data[[i]]$p+sum(Data[[i]]$Beta != 0))*log(Data[[i]]$n)
     }
   }
   BIC
@@ -298,17 +299,27 @@ dev.ratio = function(Data,meanZ,alpha,lambda,ndt,K){
 
 iClusterPlus = function(dt1,dt2=NULL,dt3=NULL,dt4=NULL,type=c("gaussian","binomial","poisson","multinomial"),
   K=2,alpha=c(1,1,1,1),lambda=c(0.03,0.03,0.03,0.03),n.burnin=100,n.draw=200,maxiter=20,sdev=0.05,eps=1.0e-4){
-  
-#  if(!is.loaded("iClusterPlus.so")){
-#    dyn.load("/home/nfs/moq/PCA/C/iClusterPlus.so")
-#  }
 
+  dttype = c("gaussian","binomial","poisson","multinomial")
   if(missing(dt1)){
     stop("Error: dt1 is missing!\n")
   }
 
+  if(!all(type %in% dttype)){
+      cat("Error: ",type[!all(type %in% dttype)],"\n")
+      stop("Allowed data types are gaussian, binomial, poisson and multinomial. \n")
+  }
+
+  isNULL = c(is.null(dt1),is.null(dt2),is.null(dt3),is.null(dt4))
+  if(any(diff(isNULL) == -1)){
+      stop("Error: dt1 to dt4 must be assigned in order.\n")
+  }
+
+  if(sum(!isNULL) > length(type)){
+      stop("Error:  data type is missing for some data. \n")
+  } 
+
   n = nrow(dt1)
-  dttype = c("gaussian","binomial","poisson","multinomial")
   ndt = 1
   Alpha = list()
   Beta = list()

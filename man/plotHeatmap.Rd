@@ -25,6 +25,10 @@ plotHeatmap(fit,datasets,type=c("gaussian","binomial","poisson","multinomial"),
   \item{plot.chr}{A vector of logical values each specificy whether to annotate chromosome number on the left of the panel. Typically used for copy number data type. Default is FALSE.}
   \item{cap}{Image color option}
 }
+\details{
+  The samples are ordered by the cluster assignment using the R code: order(fit$clusters).
+  For each data set, the features are ordered by hierarchical clustering of the features using the complete method and 1-correlation coeffient as the distance.
+  }
 \seealso{
   \code{\link{iCluster}},\code{\link{iCluster2}}
 }
