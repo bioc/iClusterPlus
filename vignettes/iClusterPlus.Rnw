@@ -40,9 +40,9 @@ Memorial Sloan-Kettering Cancer Center\\
 \tableofcontents
 
 \section{Introduction}
-iClusterPlus and iClusterBayes are developed for integrative
-clustering analysis of multi-type genomic data and are an enhanced
-version of iCluster (Shen, Olshen and Ladanyi, 2009). Multi-type genomic data arise from the experiments where biological samples (e.g., tumor
+Programs iClusterPlus and iClusterBayes are developed for integrative
+clustering analysis of multi-type genomic data, which are significant
+extension of the iCluster program (Shen, Olshen and Ladanyi, 2009). Multi-type genomic data arise from the experiments where biological samples (e.g., tumor
 samples) are analyzed by multiple techniques, for instance, array comparative genomic hybridization (aCGH), gene expression microarray, RNA-seq and DNA-seq, and so on.   
 Examples of these data can be obtained from the Cancer Genome Atlas (TCGA) (\url{http://cancergenome.nih.gov/}).  \\
 
