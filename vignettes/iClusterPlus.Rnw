@@ -51,8 +51,9 @@ The iClusterPlus User's guide can be obtained from the Bioconductor web page.
 If you are using Unix/Linux, you can get the manual by typing the following code in R Console.
 \begin{Schunk}
 \begin{Sinput}
-> source("http://bioconductor.org/biocLite.R")
-> biocLite("iClusterPlus")
+> if (!requireNamespace("BiocManager", quietly=TRUE))
+    > install.packages("BiocManager")
+> BiocManager::install("iClusterPlus")
 > library(iClusterPlus)
 > iManual()
 \end{Sinput}
