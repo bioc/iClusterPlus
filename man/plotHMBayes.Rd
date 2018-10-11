@@ -7,8 +7,10 @@
 \usage{
 plotHMBayes(fit, datasets, type = c("gaussian", "binomial", "poisson"),
     sample.order = NULL, row.order = NULL, sparse = NULL, 
-    threshold = rep(0.5,length(datasets)), width = 5, scale = rep("none",length(datasets)), 
-    col.scheme = rep(list(bluered(256)),length(datasets)),chr=NULL, plot.chr=NULL, cap=NULL)
+    threshold = rep(0.5,length(datasets)), width = 5,
+    scale = rep("none",length(datasets)), 
+    col.scheme = rep(list(bluered(256)),length(datasets)),
+    chr=NULL, plot.chr=NULL, cap=NULL)
 }
 \arguments{
   \item{fit}{A iClusterBayes object.}
@@ -39,7 +41,7 @@ plotHMBayes(fit, datasets, type = c("gaussian", "binomial", "poisson"),
 \examples{
 # see iManual.pdf
 }
-\author{Ronglai Shen \email{shenr@mskcc.org},Qianxing Mo \email{qmo@bcm.edu}}
+\author{Ronglai Shen \email{shenr@mskcc.org},Qianxing Mo \email{qianxing.mo@moffitt.org}}
 \references{
 Mo Q, Shen R, Guo C, Vannucci M, Chan KS, Hilsenbeck SG. (2018).  
 A fully Bayesian latent variable model for integrative clustering analysis of multi-type omics data.

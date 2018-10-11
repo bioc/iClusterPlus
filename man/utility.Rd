@@ -41,7 +41,7 @@ iManual(view=TRUE)
 #devR = getDevR(simuResult)
 #clusters = getClusters(simuResult)
 }
-\author{Qianxing Mo \email{qmo@bcm.edu}}
+\author{Qianxing Mo \email{qianxing.mo@moffitt.org}}
 \references{
   Qianxing Mo, Sijian Wang, Venkatraman E. Seshan, Adam B. Olshen, Nikolaus Schultz, Chris Sander, R. Scott Powers, Marc Ladanyi, and Ronglai Shen.  (2012).  
   Pattern discovery and cancer gene identification in integrated cancer genomic data. 

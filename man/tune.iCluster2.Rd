@@ -36,7 +36,7 @@ tune.iCluster2(x, K, method=c("lasso","enet","flasso","glasso","gflasso"),base=2
   \item{ps}{Rand index}
   \item{ps.adjusted}{Adjusted Rand index.}
 }
-\author{Qianxing Mo \email{qmo@bcm.edu},Ronglai Shen,Sijian Wang}
+\author{Qianxing Mo \email{qianxing.mo@moffitt.org},Ronglai Shen,Sijian Wang}
 \references{
   Ronglai Shen, Sijian Wang, Qianxing Mo. (2013).  Sparse Integrative Clustering of Multiple Omics Data Sets. \emph{Annals of Applied Statistics.} 7(1):269-294
 }

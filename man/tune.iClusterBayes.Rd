@@ -5,8 +5,10 @@
 In order to determining the appropriate number of clusters, tune.iClusterBayes calls iClusterBayes function and performs parallel computation for K=1,2,....
 }
 \usage{
-tune.iClusterBayes(cpus=6,dt1,dt2=NULL,dt3=NULL,dt4=NULL,dt5=NULL,dt6=NULL,type=c("gaussian","binomial","poisson"),
-    K=1:6,n.burnin=1000,n.draw=1200,prior.gamma=rep(0.1,6),sdev=0.5,beta.var.scale=1,thin=1,pp.cutoff=0.5)
+tune.iClusterBayes(cpus=6,dt1,dt2=NULL,dt3=NULL,dt4=NULL,dt5=NULL,dt6=NULL,
+	type=c("gaussian","binomial","poisson"),
+   	K=1:6,n.burnin=1000,n.draw=1200,prior.gamma=rep(0.1,6),
+	sdev=0.5,beta.var.scale=1,thin=1,pp.cutoff=0.5)
 }
 \arguments{
   \item{cpus}{Number of CPU used for parallel computation.  If possible, let it be equal to the number of Ks.}
@@ -50,7 +52,7 @@ tune.iClusterBayes(cpus=6,dt1,dt2=NULL,dt3=NULL,dt4=NULL,dt5=NULL,dt6=NULL,type=
 \examples{
 ### see the users' guide iManul.pdf 
 }
-\author{Qianxing Mo \email{qmo@bcm.edu}}
+\author{Qianxing Mo \email{qianxing.mo@moffitt.org}}
 \references{
 Mo Q, Shen R, Guo C, Vannucci M, Chan KS, Hilsenbeck SG. (2018).  
 A fully Bayesian latent variable model for integrative clustering analysis of multi-type omics data.

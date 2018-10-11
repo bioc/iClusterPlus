@@ -5,7 +5,8 @@
 This function is used to reduce copy number regions. 
 }
 \usage{
-CNregions(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL, frac.overlap=0.5, rmSmallseg=TRUE, nProbes=15)
+CNregions(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL,
+	       frac.overlap=0.5, rmSmallseg=TRUE, nProbes=15)
 }
 \arguments{
   \item{seg}{DNAcopy CBS segmentation output.}

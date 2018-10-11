@@ -52,7 +52,7 @@ iClusterBayes(dt1,dt2=NULL,dt3=NULL,dt4=NULL,dt5=NULL,dt6=NULL,
 \examples{
 # see iManual.pdf
 }
-\author{Qianxing Mo \email{qmo@bcm.edu}}
+\author{Qianxing Mo \email{qianxing.mo@moffitt.org}}
 \references{
 Mo Q, Shen R, Guo C, Vannucci M, Chan KS, Hilsenbeck SG. (2018).  
 A fully Bayesian latent variable model for integrative clustering analysis of multi-type omics data.

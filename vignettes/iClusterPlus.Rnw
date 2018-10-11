@@ -27,10 +27,9 @@
 \maketitle
 
 \begin{center}
-$^1$Division of Biostatistics\\
-Dan L. Duncan Cancer Center\\
-Baylor College of Medicine\\
-{\tt qmo@bcm.edu} \\
+$^1$Department of Biostatistics \& Bioinformatics \\
+H. Lee Moffitt Cancer Center \& Research Institute \\
+{\tt qianxing.mo@moffitt.org} \\
 \ \\
 $^2$Deparment of Epidemiology and Biostatistics \\
 Memorial Sloan-Kettering Cancer Center\\

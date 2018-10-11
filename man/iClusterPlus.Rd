@@ -51,7 +51,7 @@ iClusterPlus(dt1,dt2=NULL,dt3=NULL,dt4=NULL,
 \examples{
 # see iManual.pdf
 }
-\author{Qianxing Mo \email{qmo@bcm.edu},Ronglai Shen, Sijian Wang}
+\author{Qianxing Mo \email{qianxing.mo@moffitt.org},Ronglai Shen, Sijian Wang}
 \references{
 Qianxing Mo, Sijian Wang, Venkatraman E. Seshan, Adam B. Olshen, Nikolaus Schultz, Chris Sander, R. Scott Powers, Marc Ladanyi, and Ronglai Shen.  (2013).  
 Pattern discovery and cancer gene identification in integrated cancer genomic data. 

@@ -106,11 +106,13 @@ barplot(fit2$beta[[i]][,1])
 #library(gplots)
 #library(lattice)
 
-#plotHeatmap(fit2, datasets=x, type=rep("gaussian",length(x)), row.order=c(TRUE,TRUE,FALSE,TRUE,FALSE), 
-# sparse=rep(FALSE,length(x)), scale=rep("row",5), width=5, col.scheme=rep(list(bluered(256)),length(x)))
+#plotHeatmap(fit2, datasets=x, type=rep("gaussian",length(x)),
+   #row.order=c(TRUE,TRUE,FALSE,TRUE,FALSE), 
+   #sparse=rep(FALSE,length(x)), scale=rep("row",5), width=5,
+   #col.scheme=rep(list(bluered(256)),length(x)))
 
 }
-\author{Qianxing Mo \email{qmo@bcm.edu},Ronglai Shen,Sijian Wang}
+\author{Qianxing Mo \email{qianxing.mo@moffitt.org},Ronglai Shen,Sijian Wang}
 \references{
   Ronglai Shen, Sijian Wang, Qianxing Mo. (2013).  Sparse Integrative Clustering of Multiple Omics Data Sets. \emph{Annals of Applied Statistics.} 7(1):269-294
 }
