@@ -1,4 +1,4 @@
-/* Qianxing Mo, Dan L. Duncan Cancer Center, Baylor College of Medicine */
+/* Qianxing Mo,Department of Biostatistics & Bioinformatics, Moffitt Cancer Center */
 /* Code programs for iCluster and giCluster
    2nd last updated 8/6/2011 
    last updated 12/7/2012, change logp to logpnull, logq to logqnull
@@ -1096,9 +1096,9 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
 		  int *lenID){
 
   char *transN="N",*transT="T";
-  int i, j,kk,pk,pp,s,t;
+  int i, j,kk,pk,s,t; /* pp, */
   int ij;
-  double *btp,*btpb, *EXZt,*tempX,*tempm0,*tempm1,*tempm2,*tempm3,*BOld,*PhivecOld, *XtXdiag;
+  double *btp,*btpb, *EXZt,*tempX,*tempm0,*tempm1,*tempm2,*BOld,*PhivecOld, *XtXdiag; /* *tempm3, */
   double lbd1,lbd4,*lbd2,*lbd3,*lbd5;
   double alpha, beta,absdif;
   double ninv;
@@ -1113,7 +1113,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
   kk = (*k)*(*k);
   pk = (*p)*(*k);
   /* kn = (*k)*(*n); */
-  pp = (*p)*(*p);
+  /* pp = (*p)*(*p); */
 
   btp = dvec(pk);
   btpb = dvec(kk);

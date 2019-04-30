@@ -1,4 +1,4 @@
-/* Qianxing Mo (qmo@bcm.edu), Dan L. Duncan Cancer Center, Baylor College of Medicine */
+/* Qianxing Mo (qianxing.mo@moffitt.org), Department of Biostatistics & Bioinformatics, H. Lee Moffitt Cancer Center and Research Institute */
 /* Code programs for iClusterBayes
    last updated 11/05/2015, change logp to logpnull, logq to logqnull
 */
@@ -377,7 +377,7 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
   char *transN="N", *transT="T";
   double *alphaBeta, *alphaBeta2,*alphaBeta_p,*tempab,*tempab_p,*beta_m,*beta_p,*C1Z,*ZtZ,*invZtZ,*ZtBeta,*ZtBeta_p,*Zbeta,*Zbeta_p,*invSigmaBeta0;
   double ONE,ZERO,loglike,loglike_p,prob_gamma,prob_gamma_p,prior_gamma0,prior_gamma1,lhr;
-  int *gamma_p,i,j,nk1,k1,k1k1,incx,incy,ID,np;
+  int *gamma_p,i,j,nk1,k1,incx,incy,ID,np; 
 
   prior_gamma1 = *prior_ga1;
   prior_gamma0 = 1 - prior_gamma1; 
@@ -385,7 +385,6 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
   k1 = *k + 1;
   nk1 = (*n)*k1;
   np = (*n)*(*p);
-  k1k1 = k1*k1;
 
   incx = 1;
   incy = 1;
@@ -626,7 +625,7 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
   char *transN="N", *transT="T";
   double *alphaBeta, *alphaBeta2,*alphaBeta_p,*tempab,*tempab_p,*beta_m,*beta_p,*C1Z,*ZtZ,*invZtZ,*ZtBeta,*ZtBeta_p,*Zbeta,*Zbeta_p,*invSigmaBeta0;
   double ONE,ZERO,loglike,loglike_p,prob_gamma,prob_gamma_p,prior_gamma0,prior_gamma1,lhr;
-  int *gamma_p,i,j,nk1,k1,k1k1,incx,incy,ID,np;
+  int *gamma_p,i,j,nk1,k1,incx,incy,ID,np;
 
   prior_gamma1 = *prior_ga1;
   prior_gamma0 = 1 - prior_gamma1; 
@@ -634,7 +633,6 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
   k1 = *k + 1;
   nk1 = (*n)*k1;
   np = (*n)*(*p);
-  k1k1 = k1*k1;
 
   incx = 1;
   incy = 1;
