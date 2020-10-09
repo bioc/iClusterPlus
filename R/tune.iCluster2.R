@@ -85,8 +85,9 @@ tune.iCluster2=function(x, K, method=c("lasso","enet","flasso","glasso","gflasso
     quick.check=iCluster2(x=datasets, K=K, method=method, chr=chr, lambda=lambda.c, eps=eps)
 
     
-    if(sum(abs(apply(quick.check$Bmat,2,sum))<1e-8)>0){ps[c]=ps.adjusted[c]=pred.error[c]=NA}else{
-   	ps.c=ps.adjusted.c=pred.error.c=NULL    
+    #if(sum(abs(apply(quick.check$Bmat,2,sum))<1e-8)>0){ps[c]=ps.adjusted[c]=pred.error[c]=NA}else{   #10/09/2020
+    if(sum(abs(apply(do.call(rbind.data.frame, quick.check$beta),2,sum))<1e-8)>0){ps[c]=ps.adjusted[c]=pred.error[c]=NA}else{
+       ps.c=ps.adjusted.c=pred.error.c=NULL    
     	for(nsplit in 1:nrep){
     	#cat(paste("data split", nsplit),"\n")
     	folds <- split(sample(seq(n)), rep(1:2, length=n))
@@ -99,7 +100,9 @@ tune.iCluster2=function(x, K, method=c("lasso","enet","flasso","glasso","gflasso
         	tsdata[[j]] <- datasets[[j]][omit, ]
         }
 	    fit.trdata=iCluster2(x=trdata, K=K, method=method, chr=chr, lambda=lambda.c, eps=eps)
-	    W=fit.trdata$Bmat
+            #W=fit.trdata$Bmat                             #10/09/2020
+            W = do.call(rbind.data.frame, fit.trdata$beta) #10/09/2020
+            W=apply(W,2,as.numeric)                        #10/09/2020
 	    PSI=fit.trdata$Phivec
 	    sigma=W%*%t(W)+diag(PSI)
   	  stacked.tsdata=matrix(NA, nrow=length(omit), ncol=sum.p)
