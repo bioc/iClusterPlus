@@ -6,7 +6,7 @@
 #no restriction for 1 lambda
 
 #revised 10/09/10 per sijian's suggestion on predict.kmeans
-
+# last updated 10/09/2020
 #library(mclust)
 
 tune.iCluster2=function(x, K, method=c("lasso","enet","flasso","glasso","gflasso"), base=200, chr=NULL, true.class=NULL, lambda=NULL, n.lambda=NULL, save.nonsparse=F, nrep=10, eps=1e-4)
