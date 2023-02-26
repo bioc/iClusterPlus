@@ -7,6 +7,7 @@
 /* utility.c derived from util.c; dataType and fillData() has been changed  */
 /* 07/06/2011 */
 
+#define USE_FC_LEN_T
 #include <math.h>
 #include <Rmath.h>
 #include <R.h>
@@ -15,6 +16,11 @@
 #include <R_ext/BLAS.h> 
 #include <R_ext/Lapack.h>
 #include "iClusterPlus.h"
+
+#ifndef FCONE
+#define FCONE
+#endif
+
 /* #include <Rinternals.h>
    #include <R_ext/Rdynload.h>
    #include <R_ext/Utils.h>
@@ -560,8 +566,8 @@ void  Mstep_glasso(int *p, int *k, int *n,double *B, double *X, double *Phivec,
     printvec(ezzt,ezztrow*ezztrow);
     */
     F77_CALL(dgesv)(&ezztrow,&ezztrow,ezzt,&ezztrow,IPIV,IM,&ezztrow,&INFO);
-    F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy);  
-    F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy); 
+    F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy FCONE);  
+    F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy FCONE); 
     /*   printvec(tempv2,ezztrow); */
     dvcopy(bm[j],tempv2,ezztrow);
   } 
@@ -629,8 +635,8 @@ void  Mstep_lasso(int *p, int *k, int *n,double *B, double *X, double *Phivec,
     /*    printf("-EZZt-\n");
 	  printvec(ezzt,ezztrow*ezztrow); */
     F77_CALL(dgesv)(&ezztrow,&ezztrow,ezzt,&ezztrow,IPIV,IM,&ezztrow,&INFO);
-    F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy);  
-    F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy); 
+    F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy FCONE);  
+    F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy FCONE); 
     /*  printvec(tempv2,ezztrow); */
     dvcopy(bm[j],tempv2,ezztrow);
   } 
@@ -700,8 +706,8 @@ void  Mstep_enet(int *p, int *k, int *n,double *B, double *X, double *Phivec,
     /*  printf("-EZZt-\n");
 	printvec(ezzt,ezztrow*ezztrow); */
     F77_CALL(dgesv)(&ezztrow,&ezztrow,ezzt,&ezztrow,IPIV,IM,&ezztrow,&INFO);
-    F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy);  
-    F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy); 
+    F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy FCONE);  
+    F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy FCONE); 
     /*  printvec(tempv2,ezztrow); */
     dvcopy(bm[j],tempv2,ezztrow);
   } 
@@ -850,7 +856,7 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
   /*  printf("-EZZt-\n");
       printvec(EZZt,ezztrow*ezztrow); */
   F77_CALL(dgesv)(&pk,&pk,W,&pk,IPIV,IM,&pk,&INFO);
-  F77_CALL(dgemv)(trans,&pk,&pk,&ONE,IM,&pk,ctilde,&incx,&ZERO,tempv2,&incy); 
+  F77_CALL(dgemv)(trans,&pk,&pk,&ONE,IM,&pk,ctilde,&incx,&ZERO,tempv2,&incy FCONE); 
 
   for(j=0; j<pk; j++){
     if(fabs(tempv2[j]) < (*eps2)){
@@ -915,7 +921,7 @@ void eigen(double *A, int *row, double *w, double *z){
   liwork = 100*n;
   info = 0;
   F77_CALL(dsyevr)(jobz, range,uplo,&n,A,&lda,&vl,&vu,&il,&iu,&abstol,&m,tempw,tempz,&ldz,isuppz,
-		 work, &lwork,iwork, &liwork,&info);
+		 work, &lwork,iwork, &liwork,&info FCONE FCONE FCONE);
 
   /*sort the eigen values and eigen vectors */
   id = 0;
@@ -962,9 +968,9 @@ void lyap(double *B, double *P, double *Q, double *C, int *m, int *n){
   printvec(muvec,*n); 
   */
   invsqm2(tempm, U, m); /*Note U is NOT change on exit */
-  F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,C,m,V,n,&beta,tempv,m);
+  F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,C,m,V,n,&beta,tempv,m FCONE FCONE);
   /* printvec(tempv,10); */
-  F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,tempm,m,tempv,m,&beta,ctilde,m);
+  F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,tempm,m,tempv,m,&beta,ctilde,m FCONE FCONE);
   /*
   printf("-Ctilde 1 -\n");
   printvec(ctilde, 10);
@@ -982,8 +988,8 @@ void lyap(double *B, double *P, double *Q, double *C, int *m, int *n){
   printf("- V -\n");
   printvec(invV,(*n)*(*n));
   */
-  F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,btilde,m,invV,n,&beta,tempv,m);
-  F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,U,m,tempv,m,&beta,B,m);
+  F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,btilde,m,invV,n,&beta,tempv,m FCONE FCONE);
+  F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,U,m,tempv,m,&beta,B,m FCONE FCONE);
   Free(U);
   Free(lamvec);
   Free(V);
@@ -1065,7 +1071,7 @@ void  Mstep_gflasso(int *p,int *k,double *B,double *Phivec,double *EXZt,
 
   phi = dvec(pp);
   diagmv(phi,*p,Phivec);
-  F77_CALL(dgemm)(transa,transb,p,p,p,&alpha,phi,p,W,p,&beta,MV,p);
+  F77_CALL(dgemm)(transa,transb,p,p,p,&alpha,phi,p,W,p,&beta,MV,p FCONE FCONE);
   /*
   printf("- P -\n");
   printvec(MV,108);
@@ -1177,7 +1183,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
       }
     }
     /* btp stores Phi^{-1}B; transpose and multiply by B */
-    F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,btp,p,B,p,&beta,btpb,k);
+    F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,btp,p,B,p,&beta,btpb,k FCONE FCONE);
  
     diagplus(btpb,*k,1);
     if((*iter)==0){
@@ -1191,24 +1197,24 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
 	   printvec(tempm1,kk); */
     }
    
-    F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,btp,p,tempm1,k,&beta,tempm2,p); /*temp2 = tmp */
+    F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,btp,p,tempm1,k,&beta,tempm2,p FCONE FCONE); /*temp2 = tmp */
     if(*iter==0){
       /*   printf("- tmp -\n");
 	   printvec(tempm2, 528); */
     }
    
-    F77_CALL(dgemm)(transT,transT,k,n,p,&alpha,tempm2,p,X,n,&beta,EZ,k); /* EZ = t(tmp)%*%t(X) */
+    F77_CALL(dgemm)(transT,transT,k,n,p,&alpha,tempm2,p,X,n,&beta,EZ,k FCONE FCONE); /* EZ = t(tmp)%*%t(X) */
     if((*iter)==0){
       /*   printf("- EZ -\n");
 	   printvec(EZ, 10); */
     }
     
-    F77_CALL(dgemm)(transT,transT,p,k,n,&alpha,X,n,EZ,k,&beta,EXZt,p); /* EZZt = t(X)%*%t(EZ) */
-    F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,B,p,tempm2,p,&beta,EZZt,k);
+    F77_CALL(dgemm)(transT,transT,p,k,n,&alpha,X,n,EZ,k,&beta,EXZt,p FCONE FCONE); /* EZZt = t(X)%*%t(EZ) */
+    F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,B,p,tempm2,p,&beta,EZZt,k FCONE FCONE);
     dvscale(EZZt,kk,-1.0);
     diagplus(EZZt,*k,1);
     dvscale(EZZt,kk,*n);
-    F77_CALL(dgemm)(transN,transT,k,k,n,&alpha,EZ,k,EZ,k,&beta,tempm1,k);
+    F77_CALL(dgemm)(transN,transT,k,k,n,&alpha,EZ,k,EZ,k,&beta,tempm1,k FCONE FCONE);
     dvadd(EZZt,tempm1,kk);
     if((*iter)==0){
       /*   printf("- EZZt -\n");
@@ -1269,7 +1275,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     // }      
     
     /* direct computation of Phivec; don't need matrix product for just the diagonal */
-    F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,B,p,EZZt,k,&beta,tempm2,p); /* B%*%EZZt */
+    F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,B,p,EZZt,k,&beta,tempm2,p FCONE FCONE); /* B%*%EZZt */
     for(j=0; j< (*p); j++){             /* j is the row index */
       Phivec[j] = xtxdiag[j];           /* initialize Phivec  */
       for(i=0; i< (*k); i++){           /* i the column index */
@@ -2230,7 +2236,7 @@ double logBinom(double *zi,double *alpha,double *beta,int *xi,int *p,int *k){
   ONE = 1.0;
   
   dvcopy(eta,alpha,*p);
-  F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zi,&incx,&ONE,eta,&incy);
+  F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zi,&incx,&ONE,eta,&incy FCONE);
   
   loglike = 0;
   for(i=0; i<(*p);i++){
@@ -2276,7 +2282,7 @@ void logBinomAll(double *LogLike,double *Z,double *alpha,double *beta,int *X,int
   /* j is the index for subject */
   for(j=0; j<(*n); j++){
     dvcopy(eta,alpha,*p);
-    F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zm[j],&incx,&ONE,eta,&incy);
+    F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zm[j],&incx,&ONE,eta,&incy FCONE);
     
     for(i=0; i<(*p);i++){
       if(xm[j][i]==1){
@@ -2316,7 +2322,7 @@ double logPoisson(double *zi,double *alpha,double *beta,int *xi,int *p,int *k){
   ONE = 1.0;
   
   dvcopy(eta,alpha,*p);
-  F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zi,&incx,&ONE,eta,&incy);
+  F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zi,&incx,&ONE,eta,&incy FCONE);
   
   loglike = 0;
   for(i=0; i<(*p);i++){
@@ -2358,7 +2364,7 @@ void logPoissonAll(double *LogLike,double *Z,double *alpha,double *beta,int *X,i
   /*loop over subject j, j = 1, ..., n */
   for(j=0; j<(*n); j++){
     dvcopy(eta,alpha,*p);
-    F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zm[j],&incx,&ONE,eta,&incy);
+    F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zm[j],&incx,&ONE,eta,&incy FCONE);
   
     for(i=0; i<(*p);i++){
       loglike = loglike + xm[j][i]*eta[i] - exp(eta[i]);
@@ -2395,7 +2401,7 @@ double logNorm(double *zi,double *alpha,double *beta,double *sigma2,double *yi,i
   loglike = 0;
 
   /*Note, without copying alpha to eta because alpha will be substracted at the following code */
-  F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zi,&incx,&ONE,eta,&incy);
+  F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zi,&incx,&ONE,eta,&incy FCONE);
   
   for(i=0;i<(*p); i++){
     dif[i] = yi[i] - alpha[i] - eta[i];
@@ -2442,7 +2448,7 @@ void logNormAll(double *LogLike,double *Z,double *alpha,double *beta,double *sig
   for(j=0; j<(*n); j++){
     /*Note, without copying alpha to eta because alpha will be substracted at the following code */
     /* eta is a vector of zeros */
-    F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zm[j],&incx,&ONE,eta,&incy);
+    F77_CALL(dgemv)(trans,p,k,&ONE,beta,p,zm[j],&incx,&ONE,eta,&incy FCONE);
   
     for(i=0;i<(*p); i++){
       dif[i] = ym[j][i] - alpha[i] - eta[i];

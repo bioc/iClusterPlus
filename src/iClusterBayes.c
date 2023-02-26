@@ -2,6 +2,7 @@
 /* Code programs for iClusterBayes
    last updated 11/05/2015, change logp to logpnull, logq to logqnull
 */
+#define USE_FC_LEN_T
 #include <math.h>
 #include <Rmath.h>
 #include <R.h>
@@ -9,9 +10,14 @@
 #include <R_ext/Rdynload.h>
 #include <R_ext/BLAS.h> 
 #include <R_ext/Lapack.h>
+#include <Rconfig.h>
 /* Note include "iClusterPlus.h" must be put behind include <math.h> */
 /* Otherwise beta variable will confict with #define beta Rf_beta in <math.h> */
 #include "iClusterPlus.h"
+
+#ifndef FCONE
+#define FCONE
+#endif
 
 /* x = x + y */
 void ivadd(int * x, int *y, int size) {
@@ -84,7 +90,7 @@ void rmvnormal(double *vec, double *mu, double *cov, int *n){
   }
   /* tempcov = LL'; tempcov contain the L, but the upper triangle is not set to 0*/
 
-  F77_CALL(dpotrf)(uplo,n,tempcov,n,&info);
+  F77_CALL(dpotrf)(uplo,n,tempcov,n,&info FCONE);
 
   /* printvec(tempcov,nn); */
   /* set the upper triangle to zero; i for column, j for row */
@@ -100,7 +106,7 @@ void rmvnormal(double *vec, double *mu, double *cov, int *n){
   /* printvec(tempcov,nn); */
   /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
   /* vec = Lz*/
-  F77_CALL(dgemv)(transN,n,n,&ONE,tempcov,n,zvec,&incx, &ZERO,vec, &incy);  
+  F77_CALL(dgemv)(transN,n,n,&ONE,tempcov,n,zvec,&incx, &ZERO,vec, &incy FCONE);  
   dvadd(vec,mu,*n); /* vec = mu +vec */
 
   Free(zvec);
@@ -163,13 +169,13 @@ void bvsNormal(double *X,double *Z,double *alpha,double *beta,double *sigma2,int
   /* compute the posterior mean and variance of beta */
   /*C := alpha*op( A )*op( B ) + beta*C */
   /* ZtZ = t(C1Z) %*% C1Z */
-  F77_CALL(dgemm)(transT,transN,&k1,&k1,n,&ONE,C1Z,n,C1Z,n,&ZERO,ZtZ,&k1);
+  F77_CALL(dgemm)(transT,transN,&k1,&k1,n,&ONE,C1Z,n,C1Z,n,&ZERO,ZtZ,&k1 FCONE FCONE);
   invsqm2(invZtZ,ZtZ,&k1); /* invZtZ = slove(ZtZ); ZtZ is not changed */
   /*printvec(ZtZ,9);
     printvec(invZtZ,9); */
   /*ZtX = t(C1Z) %*% X; ZtX is k1 by p matrix */
-  F77_CALL(dgemm)(transT,transN,&k1,p,n,&ONE,C1Z,n,X,n,&ZERO,ZtX,&k1);
-  /* Rprintf("--- ZtX ---\n");
+  F77_CALL(dgemm)(transT,transN,&k1,p,n,&ONE,C1Z,n,X,n,&ZERO,ZtX,&k1 FCONE FCONE);
+  /* Rprintf("--- ZtX ---\n"); 
      printvec(ZtX,*p*2); */
 
   /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
@@ -188,13 +194,13 @@ void bvsNormal(double *X,double *Z,double *alpha,double *beta,double *sigma2,int
       alphaBeta[(*p)+ID] = beta[ID]*gamma[i];  /* alphaBeta is p by k+1 */
       /* alphaBeta[(*p)+ID] = beta[ID];  because beta is set to 0 if gamma[i]  is 0*/
       ID = ID + 1;
-    }
+     }
   }
 
   /* meanx = zz %*% t(alphaBeta)*/
   /* meanX <-  zz[, -1] %*% beta[-1, ] %*% diag.gamma + t(matrix(rep(beta[1, ], n), nrow=p))  */
   /* in R, beta is transformed to (k+1) x p; in C, beta is p x (k+1) */
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta,p,&ZERO,meanX,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta,p,&ZERO,meanX,n FCONE FCONE);
   /* Rprintf("--- meanX ---\n");
      printvec(meanX,*p*2); */
   /* posterior parameter for the sigma_j^2 */
@@ -246,7 +252,7 @@ void bvsNormal(double *X,double *Z,double *alpha,double *beta,double *sigma2,int
     dvadd(ZtXj,invSigmaBeta0,k1);
     /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
     /* beta_m = beta_inV %*% ZtXj */
-    F77_CALL(dgemv)(transN,&k1,&k1,&ONE,beta_invV,&k1,ZtXj,&incx, &ZERO,beta_m, &incy);
+    F77_CALL(dgemv)(transN,&k1,&k1,&ONE,beta_invV,&k1,ZtXj,&incx, &ZERO,beta_m, &incy FCONE);
 
     /* Generate beta value from multinormal distribution */
     rmvnormal(tempab,beta_m,beta_invV,&k1);
@@ -290,7 +296,7 @@ void bvsNormal(double *X,double *Z,double *alpha,double *beta,double *sigma2,int
 
   /* meanX <-  zz[, -1] %*% beta[-1, ] %*% diag(cgamma)) + t(matrix(rep(beta[1, ], n), nrow=p))  */
   /* in R, beta is transformed to (k+1) x p; in C, beta is p x (k+1) */
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,meanX,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,meanX,n FCONE FCONE);
 
   ID = *p;
   for(i=1; i<k1; i++){
@@ -303,7 +309,7 @@ void bvsNormal(double *X,double *Z,double *alpha,double *beta,double *sigma2,int
   
   /* meanX.p <-  zz[, -1] %*% beta[-1, ] %*% diag(c(gamma.p)) + t(matrix(rep(beta[1, ], n), nrow=p))  */
   /* in R, beta is transformed to (k+1) x p; in C, beta is p x (k+1) */
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,meanX_p,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,meanX_p,n FCONE FCONE);
 
   /* calculate log acceptance ratio of gamma */
   /* meanX = meanX - X; mean X is n x p matrix */
@@ -419,7 +425,7 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
 
   /*C := alpha*op( A )*op( B ) + beta*C */
   /* ZtZ = t(C1Z) %*% C1Z */
-  F77_CALL(dgemm)(transT,transN,&k1,&k1,n,&ONE,C1Z,n,C1Z,n,&ZERO,ZtZ,&k1);
+  F77_CALL(dgemm)(transT,transN,&k1,&k1,n,&ONE,C1Z,n,C1Z,n,&ZERO,ZtZ,&k1 FCONE FCONE);
   invsqm2(invZtZ,ZtZ,&k1); /* invZtZ = slove(ZtZ); ZtZ is not changed */
   dvscale(invZtZ, k1, *lambda_mh); /* var.prop <-  lambda.mh * solve(t(zz) %*% zz); variance for proposal beta */
 
@@ -462,7 +468,7 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
   /* in R, beta is transformed to (k+1) x p; in C, beta is p x (k+1) */
 
   /* calculate ZtBeta using current alphaBeta,which is alphaBeta2 == alpha + (Z)^T beta */
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta,n FCONE FCONE);
 
   /* calculate ZtBeta_p using proposed alphaBeta,which is alphaBeta2 == alpha + (Z)^T beta */
   for(i=0; i<(*p); i++){
@@ -477,7 +483,7 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
     }
   }
   
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta_p,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta_p,n FCONE FCONE);
 
   /* calculate joint log-likelihood */
   ID = 0;
@@ -498,11 +504,11 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
     
    /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
   /* invSigmBeta0 = invSigma0 %*% (beta_j - beta0) */
-   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy);
+   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy FCONE);
    /*  (beta_j - beta0) %*% invSigma0 %*% (beta_j - beta0) */
    loglike = loglike - 0.5 * dvdot(tempab,invSigmaBeta0,k1);
 
-   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy);  
+   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy FCONE);  
    loglike_p = loglike_p - 0.5 * dvdot(tempab_p,invSigmaBeta0,k1);
 
    prob_gamma = prior_gamma1;
@@ -545,10 +551,10 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
       /* calculate acceptance ratio for beta */
       /* Ztbeta = zz %*% alpha_beta; n x 1*/
       /* calculate Ztbeta using current alpha_beta,which is alphaBeta2 == alpha + (Z)^T beta */
-      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_m,&incx,&ZERO,Zbeta,&incy);
+      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_m,&incx,&ZERO,Zbeta,&incy FCONE);
       
       /* calculate ZtBeta_p using proposed alphaBeta,which is alphaBeta2 == alpha + (Z)^T beta */
-      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_p,&incx,&ZERO,Zbeta_p,&incy);
+      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_p,&incx,&ZERO,Zbeta_p,&incy FCONE);
 
       /* calculate joint log-likelihood;  note X is n x p */
       loglike = 0;
@@ -567,11 +573,11 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
     
       /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
       /* invSigmBeta0 = invSigma0 %*% (beta_j - beta0) */
-      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy);
+      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy FCONE);
       /*  (beta_j - beta0) %*% invSigma0 %*% (beta_j - beta0) */
       loglike = loglike - 0.5 * dvdot(tempab,invSigmaBeta0,k1);
 
-      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy);  
+      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy FCONE);  
       loglike_p = loglike_p - 0.5 * dvdot(tempab_p,invSigmaBeta0,k1);
       /* don't need to calculate log probability of gamma[j] because the current and proposed gamma[j] are 1 */
       lhr = loglike_p - loglike; 
@@ -667,7 +673,7 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
 
   /*C := alpha*op( A )*op( B ) + beta*C */
   /* ZtZ = t(C1Z) %*% C1Z */
-  F77_CALL(dgemm)(transT,transN,&k1,&k1,n,&ONE,C1Z,n,C1Z,n,&ZERO,ZtZ,&k1);
+  F77_CALL(dgemm)(transT,transN,&k1,&k1,n,&ONE,C1Z,n,C1Z,n,&ZERO,ZtZ,&k1 FCONE FCONE);
   invsqm2(invZtZ,ZtZ,&k1); /* invZtZ = slove(ZtZ); ZtZ is not changed */
   dvscale(invZtZ, k1, *lambda_mh); /* var.prop <-  lambda.mh * solve(t(zz) %*% zz); variance for proposal beta */
 
@@ -710,7 +716,7 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
   /* in R, beta is transformed to (k+1) x p; in C, beta is p x (k+1) */
 
   /* calculate ZtBeta using current alphaBeta,which is alphaBeta2 == alpha + (Z)^T beta */
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta,n FCONE FCONE);
 
   /* calculate ZtBeta_p using proposed alphaBeta,which is alphaBeta2 == alpha + (Z)^T beta */
   for(i=0; i<(*p); i++){
@@ -725,7 +731,7 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
     }
   }
   
-  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta_p,n);
+  F77_CALL(dgemm)(transN,transT,n,p, &k1,&ONE,C1Z,n,alphaBeta2,p,&ZERO,ZtBeta_p,n FCONE FCONE);
 
   /*********** calculate joint log likelihood *************/
   ID = 0;
@@ -751,10 +757,10 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
     
    /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
   /* invSigmBeta0 = invSigma0 %*% (beta_j - beta0) */
-   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy);  
+   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy FCONE);  
    loglike = loglike - 0.5 * dvdot(tempab,invSigmaBeta0,k1);
 
-   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy);  
+   F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy FCONE);  
    loglike_p = loglike_p - 0.5 * dvdot(tempab_p,invSigmaBeta0,k1);
 
    prob_gamma = prior_gamma1;
@@ -797,10 +803,10 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
       /* calculate acceptance ratio for beta */
       /* Ztbeta = zz %*% alpha_beta; n x 1*/
       /* calculate Ztbeta using current alpha_beta,which is alphaBeta2 == alpha + (Z)^T beta */
-      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_m,&incx,&ZERO,Zbeta,&incy);
+      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_m,&incx,&ZERO,Zbeta,&incy FCONE);
       
       /* calculate ZtBeta_p using proposed alphaBeta,which is alphaBeta2 == alpha + (Z)^T beta */
-      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_p,&incx,&ZERO,Zbeta_p,&incy);
+      F77_CALL(dgemv)(transN,n,&k1,&ONE,C1Z,n,beta_p,&incx,&ZERO,Zbeta_p,&incy FCONE);
 
       /* calculate joint log-likelihood */
       loglike = 0;
@@ -824,11 +830,11 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
     
       /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y */
       /* invSigmBeta0 = invSigma0 %*% (beta_j - beta0) */
-      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy);
+      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab,&incx, &ZERO,invSigmaBeta0, &incy FCONE);
       /*  (beta_j - beta0) %*% invSigma0 %*% (beta_j - beta0) */
       loglike = loglike - 0.5 * dvdot(tempab,invSigmaBeta0,k1);
 
-      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy);  
+      F77_CALL(dgemv)(transN,&k1,&k1,&ONE,invSigma0,&k1,tempab_p,&incx, &ZERO,invSigmaBeta0, &incy FCONE);  
       loglike_p = loglike_p - 0.5 * dvdot(tempab_p,invSigmaBeta0,k1);
 
       /* Don't need to calculate the log probability of gamma[j] because both current and proposed gamma[j] are 1. */
