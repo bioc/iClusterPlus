@@ -31,7 +31,7 @@
 
 int  *ivec(int len){
   int *v;
-  v = (int *)Calloc(len, int);
+  v = (int *)R_Calloc(len, int);
   if(v == NULL){
     error("Error: fail to allocate memory space.\n");
   }
@@ -40,7 +40,7 @@ int  *ivec(int len){
 
 double *dvec(int len){
   double *v;
-  v = (double *)Calloc(len, double);
+  v = (double *)R_Calloc(len, double);
   if(v == NULL){
     error("Error: fail to allocate memory space.\n");
   }
@@ -131,7 +131,7 @@ double vecsum2(double *rvec, int n){
 void invsqm(double *B, double *A, int *n){
   int *IPIV;
   int i, j,id,INFO;
-  IPIV = (int *)Calloc(*n, int);
+  IPIV = (int *)R_Calloc(*n, int);
   for(i=0; i<(*n); i++){
     for(j=0; j<(*n); j++){
       id = i*(*n)+j;
@@ -143,7 +143,7 @@ void invsqm(double *B, double *A, int *n){
     }
   }
   F77_CALL(dgesv)(n,n,A,n,IPIV,B,n,&INFO);
-  Free(IPIV);
+  R_Free(IPIV);
 }
 
 /* B = inverse(A) */
@@ -156,7 +156,7 @@ void invsqm2(double *B, double *A, int *n){
   nn = (*n)*(*n);
   tempA = dvec(nn);
   dvcopy(tempA,A,nn);
-  IPIV = (int *)Calloc(*n, int);
+  IPIV = (int *)R_Calloc(*n, int);
   for(i=0; i<(*n); i++){
     for(j=0; j<(*n); j++){
       id = i*(*n)+j;
@@ -168,8 +168,8 @@ void invsqm2(double *B, double *A, int *n){
     }
   }
   F77_CALL(dgesv)(n,n,tempA,n,IPIV,B,n,&INFO);
-  Free(IPIV);
-  Free(tempA);
+  R_Free(IPIV);
+  R_Free(tempA);
 }
 
 /* x = x + y */
@@ -346,12 +346,12 @@ void diagplusv(double *m, int nrow, double *scale){
 double **drowm(int row, int col){
   int i;
   double **m;
-  m = (double **)Calloc(row, double *);
+  m = (double **)R_Calloc(row, double *);
   if(m == NULL){
     error("Error: fail to allocate memory space.\n");
   }
   for(i=0; i<row; i++) {
-    m[i] = (double *)Calloc(col, double);
+    m[i] = (double *)R_Calloc(col, double);
     if(m[i] == NULL){
       error("Error: fail to allocate memory space.\n");
     }
@@ -363,12 +363,12 @@ double **drowm(int row, int col){
 int **irowm(int row, int col){
   int i;
   int **m;
-  m = (int **)Calloc(row, int *);
+  m = (int **)R_Calloc(row, int *);
   if(m == NULL){
     error("Error: fail to allocate memory space.\n");
   }
   for(i=0; i<row; i++) {
-    m[i] = (int *)Calloc(col, int);
+    m[i] = (int *)R_Calloc(col, int);
     if(m[i] == NULL){
       error("Error: fail to allocate memory space.\n");
     }
@@ -380,12 +380,12 @@ int **irowm(int row, int col){
 double **dcolm(int row, int col){
   int i;
   double **m;
-  m = (double **)Calloc(col, double *);
+  m = (double **)R_Calloc(col, double *);
   if(m == NULL){
     error("Error: fail to allocate memory space.\n");
   }
   for(i=0; i<col; i++) {
-    m[i] = (double *)Calloc(row, double);
+    m[i] = (double *)R_Calloc(row, double);
     if(m[i] == NULL){
       error("Error: fail to allocate memory space.\n");
     }
@@ -396,25 +396,25 @@ double **dcolm(int row, int col){
 void dmfree(double **v,int row){
   int i;
   for(i=0; i<row; i++){
-    Free(v[i]);
+    R_Free(v[i]);
   }
-  Free(v);  
+  R_Free(v);  
 }
 
 void difree(int **v,int row){
   int i;
   for(i=0; i<row; i++){
-    Free(v[i]);
+    R_Free(v[i]);
   }
-  Free(v);  
+  R_Free(v);  
 }
 
 void imfree(int **v,int row){
   int i;
   for(i=0; i<row; i++){
-    Free(v[i]);
+    R_Free(v[i]);
   }
-  Free(v);
+  R_Free(v);
 }
 
 /*if abs(m[i][j]) < val, m[i][k] = val  */
@@ -579,12 +579,12 @@ void  Mstep_glasso(int *p, int *k, int *n,double *B, double *X, double *Phivec,
   /* dvcopy(B,bv,(bcol)*(brow)); */
   dmfree(bm,brow);
   dmfree(xm,xrow);
-  Free(IM);
-  Free(ezzt);
-  /*  Free(phiv); */
-  Free(tempv1);
-  Free(tempv2);
-  Free(IPIV);
+  R_Free(IM);
+  R_Free(ezzt);
+  /*  R_Free(phiv); */
+  R_Free(tempv1);
+  R_Free(tempv2);
+  R_Free(IPIV);
 }
 
 /*X is the t(X) of the original R code */
@@ -649,13 +649,13 @@ void  Mstep_lasso(int *p, int *k, int *n,double *B, double *X, double *Phivec,
   /*  printf("- good 6 -\n"); */
   dmfree(bm,brow);
   dmfree(xm,xrow);
-  Free(IM);
-  Free(ezzt);
-  /*  Free(phiv); */
-  Free(tempv1);
-  Free(tempv2);
-  Free(w);
-  Free(IPIV);
+  R_Free(IM);
+  R_Free(ezzt);
+  /*  R_Free(phiv); */
+  R_Free(tempv1);
+  R_Free(tempv2);
+  R_Free(w);
+  R_Free(IPIV);
 }
 
 /*X is the t(X) of the original R code */
@@ -720,13 +720,13 @@ void  Mstep_enet(int *p, int *k, int *n,double *B, double *X, double *Phivec,
   /*  printf("- good 6 -\n"); */
   dmfree(bm,brow);
   dmfree(xm,xrow);
-  Free(IM);
-  Free(ezzt);
-  /*  Free(phiv); */
-  Free(tempv1);
-  Free(tempv2);
-  Free(w);
-  Free(IPIV);
+  R_Free(IM);
+  R_Free(ezzt);
+  /*  R_Free(phiv); */
+  R_Free(tempv1);
+  R_Free(tempv2);
+  R_Free(w);
+  R_Free(IPIV);
 }
 
 
@@ -875,23 +875,23 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
   dmtov(B,bm,brow,bcol);
 
   dmfree(bm,brow);
-  Free(IM);
-  Free(ezzt);
+  R_Free(IM);
+  R_Free(ezzt);
   dmfree(exzt,exztrow);
   dmfree(M,pk);
   dmfree(tempM,pk);
   dmfree(qtilde,pk);
-  Free(W);
-  Free(L);
-  Free(MV);
-  Free(tempm);
-  Free(ctilde);
-  Free(tempC);
-  Free(bv);
-  /*  Free(phiv); */
-  Free(tempv1);
-  Free(tempv2);
-  Free(IPIV);
+  R_Free(W);
+  R_Free(L);
+  R_Free(MV);
+  R_Free(tempm);
+  R_Free(ctilde);
+  R_Free(tempC);
+  R_Free(bv);
+  /*  R_Free(phiv); */
+  R_Free(tempv1);
+  R_Free(tempv2);
+  R_Free(IPIV);
 }
 
 /* w = dvec(n);  eigen values
@@ -932,11 +932,11 @@ void eigen(double *A, int *row, double *w, double *z){
       id++;
     }
   }
-  Free(tempw);
-  Free(tempz);
-  Free(work);
-  Free(isuppz);
-  Free(iwork);
+  R_Free(tempw);
+  R_Free(tempz);
+  R_Free(work);
+  R_Free(isuppz);
+  R_Free(iwork);
 }
 
 
@@ -990,15 +990,15 @@ void lyap(double *B, double *P, double *Q, double *C, int *m, int *n){
   */
   F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,btilde,m,invV,n,&beta,tempv,m FCONE FCONE);
   F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,U,m,tempv,m,&beta,B,m FCONE FCONE);
-  Free(U);
-  Free(lamvec);
-  Free(V);
-  Free(invV);
-  Free(muvec);
-  Free(ctilde);
-  Free(btilde);
-  Free(tempm);
-  Free(tempv);
+  R_Free(U);
+  R_Free(lamvec);
+  R_Free(V);
+  R_Free(invV);
+  R_Free(muvec);
+  R_Free(ctilde);
+  R_Free(btilde);
+  R_Free(tempm);
+  R_Free(tempv);
 }
 
 
@@ -1085,12 +1085,12 @@ void  Mstep_gflasso(int *p,int *k,double *B,double *Phivec,double *EXZt,
 
   dmfree(bm,brow);
   dmfree(M,*p);
-  Free(W);
-  Free(L);
-  Free(MV);
-  Free(phi);
-  Free(tempv1);
-  Free(tempv2);
+  R_Free(W);
+  R_Free(L);
+  R_Free(MV);
+  R_Free(phi);
+  R_Free(tempv1);
+  R_Free(tempv2);
   
 }
 
@@ -1164,7 +1164,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     }
     dmfree(xm,*n);
     dmfree(xmt,pvec[t]);
-    Free(tempX);
+    R_Free(tempX);
     phi[t] = dvec(pvec[t]);
     tempB[t] = dvec(pvec[t]*(*k));
     tempEXZt[t] = dvec(pvec[t]*(*k));
@@ -1307,31 +1307,31 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     dvcopy(PhivecOld,Phivec,*p);
   }
   
-  Free(btp);
-  Free(btpb);
-  Free(EXZt);
-  Free(tempm0);
-  Free(tempm1);
-  Free(tempm2);
-  // Free(tempm3);
-  Free(BOld);
-  Free(PhivecOld);
-  Free(XtXdiag);
-  Free(lbd2);
-  Free(lbd3);
-  Free(lbd5); 
+  R_Free(btp);
+  R_Free(btpb);
+  R_Free(EXZt);
+  R_Free(tempm0);
+  R_Free(tempm1);
+  R_Free(tempm2);
+  // R_Free(tempm3);
+  R_Free(BOld);
+  R_Free(PhivecOld);
+  R_Free(XtXdiag);
+  R_Free(lbd2);
+  R_Free(lbd3);
+  R_Free(lbd5); 
   
   for(t=0; t<(*lenT); t++){
-    Free(xlist[t]);
-    Free(phi[t]);
-    Free(tempB[t]);
-    Free(tempEXZt[t]);
+    R_Free(xlist[t]);
+    R_Free(phi[t]);
+    R_Free(tempB[t]);
+    R_Free(tempEXZt[t]);
   }
   /*
-  Free(xlist);
-  Free(phi);
-  Free(tempB);
-  Free(tempEXZt);
+  R_Free(xlist);
+  R_Free(phi);
+  R_Free(tempB);
+  R_Free(tempEXZt);
   */
 }
 
@@ -1440,15 +1440,15 @@ void lyap2(double *B, double *P, double *Q, double *C, double *UU, double *lam, 
   F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,U,m,tempv,m,&beta,B,m);
   printf("- U -\n");
   printvec(U,20); 
-  Free(U);
-  Free(lamvec);
-  Free(V);
-  Free(invV);
-  Free(muvec);
-  Free(ctilde);
-  Free(btilde);
-  Free(tempm);
-  Free(tempv);
+  R_Free(U);
+  R_Free(lamvec);
+  R_Free(V);
+  R_Free(invV);
+  R_Free(muvec);
+  R_Free(ctilde);
+  R_Free(btilde);
+  R_Free(tempm);
+  R_Free(tempv);
 }
 
 */
@@ -1551,9 +1551,9 @@ void getbeta(double *beta,int *df,int *nin,int *nvars,int *ia,double *ca){
     }
   }
 
-  Free(ja);
-  Free(oja);
-  Free(tempca);
+  R_Free(ja);
+  R_Free(oja);
+  R_Free(tempca);
 }
 
 /* this function only work when lmu == 1 (nlam==1) */
@@ -1612,8 +1612,8 @@ void getbetaMult(double *beta,int *df,int *nin,int *nvars,int *nc,int *ia,double
 
   dmtov(beta,tempca2, *nvars, *nc);
 
-  Free(ja);
-  Free(oja);
+  R_Free(ja);
+  R_Free(oja);
   dmfree(tempca1, *nin);
   dmfree(cacopy, *nvars);
   dmfree(tempca2, *nvars);
@@ -1680,10 +1680,10 @@ void elnetC(double *a0,double *beta,int *df,double *x,double *y,int *nobs,int *n
     /*    Rprintf("Non Fatal Error! All beta values are set to zeros.");  */
   }
 
-  Free(ca);
-  Free(ia);
-  Free(weights);
-  Free(vp);
+  R_Free(ca);
+  R_Free(ia);
+  R_Free(weights);
+  R_Free(vp);
 }
 
 
@@ -1730,8 +1730,8 @@ void elnetBatch(double *a0,double *beta,double *sigma2,double *x,double *y,int *
   dmfree(bm, *p);
   dmfree(xm, *nobs);
   dmfree(ym, *p);
-  Free(xcopy);
-  Free(ycopy);
+  R_Free(xcopy);
+  R_Free(ycopy);
 }
 
 double nulldev(double *y,int n){
@@ -1806,8 +1806,8 @@ void elnetBatchDev(double *a0,double *beta,double *sigma2,double *x,double *y,in
   dmfree(bm, *p);
   dmfree(xm, *nobs);
   dmfree(ym, *p);
-  Free(xcopy);
-  Free(ycopy);
+  R_Free(xcopy);
+  R_Free(ycopy);
 }
 
 
@@ -1865,11 +1865,11 @@ void fishnetC(double *a0,double *beta,int *df,double *x,double *y,int *nobs,int 
     /*    Rprintf("Non Fatal Error! All beta values are set to zeros.");  */
   }
 
-  Free(ca);
-  Free(ia);
-  Free(weights);
-  Free(offset);
-  Free(vp);
+  R_Free(ca);
+  R_Free(ia);
+  R_Free(weights);
+  R_Free(offset);
+  R_Free(vp);
 }
 
 /* a0[p],beta[p][k],df[p],x[nobs][k],y[nobs][p], y = a0 + beta'x */
@@ -1908,8 +1908,8 @@ void fishnetBatch(double *a0,double *beta,double *x,double *y,int *nobs,int *k,i
   dmfree(bm, *p);
   dmfree(xm, *nobs);
   dmfree(ym, *p);
-  Free(xcopy);
-  Free(ycopy);
+  R_Free(xcopy);
+  R_Free(ycopy);
 }
 
 /* a0[p],beta[p][k],df[p],x[nobs][k],y[nobs][p], y = a0 + beta'x */
@@ -1953,8 +1953,8 @@ void fishnetBatchDev(double *a0,double *beta,double *x,double *y,int *nobs,int *
   dmfree(bm, *p);
   dmfree(xm, *nobs);
   dmfree(ym, *p);
-  Free(xcopy);
-  Free(ycopy);
+  R_Free(xcopy);
+  R_Free(ycopy);
 }
 
 
@@ -2068,11 +2068,11 @@ void lognetC(double *a0,double *beta,int *df,double *x,int *y,int *nobs,int *nva
     }
   }
     
-  Free(ia);
-  Free(ymat); 
-  Free(ca);
-  Free(offset);
-  Free(vp);
+  R_Free(ia);
+  R_Free(ymat); 
+  R_Free(ca);
+  R_Free(offset);
+  R_Free(vp);
 }
 
 
@@ -2125,8 +2125,8 @@ void lognetBatch(double *a0,double *beta,double *x,int *y,int *nobs,int *k,int *
   dmfree(xm, *nobs);
   imfree(ym, *p);
   dmfree(tempA0, *p);
-  Free(xcopy);
-  Free(ycopy);
+  R_Free(xcopy);
+  R_Free(ycopy);
 }
 
 
@@ -2185,8 +2185,8 @@ void lognetBatchDev(double *a0,double *beta,double *x,int *y,int *nobs,int *k,in
   dmfree(xm, *nobs);
   imfree(ym, *p);
   dmfree(tempA0, *p);
-  Free(xcopy);
-  Free(ycopy);
+  R_Free(xcopy);
+  R_Free(ycopy);
 }
 
 
@@ -2250,7 +2250,7 @@ double logBinom(double *zi,double *alpha,double *beta,int *xi,int *p,int *k){
   /* The following line is for individual data set, not for mixed data set */
   /* de-comment this for testing single mcmcMult */ 
   /*  loglike = loglike - 0.5*F77_CALL(ddot)(k,zi,&incx,zi,&incy); */
-  Free(eta);
+  R_Free(eta);
   return(loglike);
 }
 
@@ -2298,7 +2298,7 @@ void logBinomAll(double *LogLike,double *Z,double *alpha,double *beta,int *X,int
   /* The following line is for individual data set, not for mixed data set */
   /* de-comment this for testing single mcmcMult */ 
   /*  loglike = loglike - 0.5*F77_CALL(ddot)(k,zi,&incx,zi,&incy); */
-  Free(eta);
+  R_Free(eta);
   imfree(xm, *n);
   dmfree(zm, *n);
 }
@@ -2333,7 +2333,7 @@ double logPoisson(double *zi,double *alpha,double *beta,int *xi,int *p,int *k){
   /* de-comment this for testing single mcmcMult */  
   /*  loglike = loglike - 0.5*F77_CALL(ddot)(k,zi,&incx,zi,&incy); */
   /*  printf("%f \n",loglike); */
-  Free(eta);
+  R_Free(eta);
   return(loglike);
 }
 
@@ -2375,7 +2375,7 @@ void logPoissonAll(double *LogLike,double *Z,double *alpha,double *beta,int *X,i
   /* de-comment this for testing single mcmcMult */  
   /*  loglike = loglike - 0.5*F77_CALL(ddot)(k,zi,&incx,zi,&incy); */
   /*  printf("%f \n",loglike); */
-  Free(eta);
+  R_Free(eta);
   imfree(xm, *n);
   dmfree(zm, *n);
 }
@@ -2412,8 +2412,8 @@ double logNorm(double *zi,double *alpha,double *beta,double *sigma2,double *yi,i
   /* de-comment this for testing single mcmcMult */
   /*  loglike = loglike - 0.5*F77_CALL(ddot)(k,zi,&incx,zi,&incy); */
   /*  printf("%f \n",loglike); */
-  Free(eta);
-  Free(dif);
+  R_Free(eta);
+  R_Free(dif);
   return(loglike);
 }
 
@@ -2462,8 +2462,8 @@ void logNormAll(double *LogLike,double *Z,double *alpha,double *beta,double *sig
   /* de-comment this for testing single mcmcMult */
   /*  loglike = loglike - 0.5*F77_CALL(ddot)(k,zi,&incx,zi,&incy); */
   /*  printf("%f \n",loglike); */
-  Free(eta);
-  Free(dif);
+  R_Free(eta);
+  R_Free(dif);
   dmfree(ym, *n);
   dmfree(zm, *n);
 }
@@ -2549,8 +2549,8 @@ double logMult(double *zi,double *alpha,double *beta,int *xi,int *class,int *ncl
   /* loglike = loglike - 0.5*F77_CALL(ddot)(K,zi,&incx,zi,&incy); */
   /*  printf("%f \n", loglike); */
   dmfree(mAlpha,*p);
-  Free(etaj);
-  Free(betajc);
+  R_Free(etaj);
+  R_Free(betajc);
   return(loglike);
 }
 
@@ -2635,8 +2635,8 @@ void logMultAll(double *LogLike,double *Z,double *alpha,double *beta,int *X,int 
   dmfree(mAlpha,*p);
   imfree(xm, *n);
   dmfree(zm, *n);
-  Free(etaj);
-  Free(betajc);
+  R_Free(etaj);
+  R_Free(betajc);
 }
 
 void metroBinom(double *zi,double *alpha,double *beta,int *xi,int *p,int *k,double *sigma,double *newz){
@@ -2652,7 +2652,7 @@ void metroBinom(double *zi,double *alpha,double *beta,int *xi,int *p,int *k,doub
   }else{
     dvcopy(newz, zi, *k);
   }
-  Free(tryz);
+  R_Free(tryz);
 }
 
 
@@ -2669,7 +2669,7 @@ void metroPoisson(double *zi,double *alpha,double *beta,int *xi,int *p,int *k,do
   }else{
     dvcopy(newz, zi, *k);
   }
-  Free(tryz);
+  R_Free(tryz);
 }
 
 /* beta = p  x (k x C) is the format in R; beta must be transposed using t(beta) before 
@@ -2687,7 +2687,7 @@ void metroMult(double *zi,double *alpha,double *beta,int *xi,int *class,int *ncl
   }else{
     dvcopy(newz, zi, *k);
   }
-  Free(tryz);
+  R_Free(tryz);
 }
 
 void metroNormal(double *zi,double *mu,double *beta, double *sigma2,double *yi,int *p,int *k,double *sigma,double *newz){
@@ -2704,7 +2704,7 @@ void metroNormal(double *zi,double *mu,double *beta, double *sigma2,double *yi,i
   }else{
     dvcopy(newz, zi, *k);
   }
-  Free(tryz);
+  R_Free(tryz);
 }
 
 /*if tryz is accepted, accept = accept + 1 */
@@ -2795,7 +2795,7 @@ void metroMix(double *zi,dataType *dt1,dataType *dt2,dataType *dt3,dataType *dt4
     *accept = *accept + 1;
   }
 
-  Free(tryz); 
+  R_Free(tryz); 
 }
 
 /* 11/14/2013 Q Mo rewrite matrix dynamic allocation and free code to avoid compiling warning on windows */

@@ -109,8 +109,8 @@ void rmvnormal(double *vec, double *mu, double *cov, int *n){
   F77_CALL(dgemv)(transN,n,n,&ONE,tempcov,n,zvec,&incx, &ZERO,vec, &incy FCONE);  
   dvadd(vec,mu,*n); /* vec = mu +vec */
 
-  Free(zvec);
-  Free(tempcov);
+  R_Free(zvec);
+  R_Free(tempcov);
 } 
 
 /* X is n x p  */
@@ -352,21 +352,21 @@ void bvsNormal(double *X,double *Z,double *alpha,double *beta,double *sigma2,int
   }
   PutRNGstate();
   
-  Free(C1Z);         /* n x (k+1) cbind(1, Z)*/
-  Free(ZtX);  /* (k+1) x p*/
-  Free(ZtXj);
-  Free(ZtZ);       /* (k+1) x (k+1) */
-  Free(invZtZ);     /* (k+1) x (k+1) */
-  Free(meanX);           /* n x p*/
-  Free(meanX_p);
-  Free(alphaBeta);  /* p x (k+1) */
-  Free(alphaBeta2); /* p x (k+1) */
-  Free(invgamma_b);         /* p */
-  Free(beta_m);             /* mean beta */
-  Free(beta_V);          /* variance of beta*/
-  Free(beta_invV);       /* precision of beta */
-  Free(tempab);
-  Free(gamma_p);
+  R_Free(C1Z);         /* n x (k+1) cbind(1, Z)*/
+  R_Free(ZtX);  /* (k+1) x p*/
+  R_Free(ZtXj);
+  R_Free(ZtZ);       /* (k+1) x (k+1) */
+  R_Free(invZtZ);     /* (k+1) x (k+1) */
+  R_Free(meanX);           /* n x p*/
+  R_Free(meanX_p);
+  R_Free(alphaBeta);  /* p x (k+1) */
+  R_Free(alphaBeta2); /* p x (k+1) */
+  R_Free(invgamma_b);         /* p */
+  R_Free(beta_m);             /* mean beta */
+  R_Free(beta_V);          /* variance of beta*/
+  R_Free(beta_invV);       /* precision of beta */
+  R_Free(tempab);
+  R_Free(gamma_p);
 }
 
 /* joint sampling gamma and beta */
@@ -597,22 +597,22 @@ void bvsPoisson(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int
     
   /* ********************************************************************/
   
-  Free(C1Z);                   /* n x (k+1) cbind(1, Z)*/
-  Free(ZtZ);                  /* (k+1) x (k+1) */
-  Free(invZtZ);              /* (k+1) x (k+1) */
-  Free(invSigmaBeta0);      /* k+1 */
-  Free(ZtBeta);            /* n x p*/
-  Free(ZtBeta_p);         /* n x p*/
-  Free(Zbeta);            /* p*/
-  Free(Zbeta_p);         /* p*/
-  Free(alphaBeta);       /* p x (k+1) */
-  Free(alphaBeta2);     /* p x (k+1) */
-  Free(alphaBeta_p);   /* p x (k+1) */
-  Free(beta_m);       /* mean beta */
-  Free(beta_p);
-  Free(tempab);
-  Free(tempab_p);
-  Free(gamma_p);
+  R_Free(C1Z);                   /* n x (k+1) cbind(1, Z)*/
+  R_Free(ZtZ);                  /* (k+1) x (k+1) */
+  R_Free(invZtZ);              /* (k+1) x (k+1) */
+  R_Free(invSigmaBeta0);      /* k+1 */
+  R_Free(ZtBeta);            /* n x p*/
+  R_Free(ZtBeta_p);         /* n x p*/
+  R_Free(Zbeta);            /* p*/
+  R_Free(Zbeta_p);         /* p*/
+  R_Free(alphaBeta);       /* p x (k+1) */
+  R_Free(alphaBeta2);     /* p x (k+1) */
+  R_Free(alphaBeta_p);   /* p x (k+1) */
+  R_Free(beta_m);       /* mean beta */
+  R_Free(beta_p);
+  R_Free(tempab);
+  R_Free(tempab_p);
+  R_Free(gamma_p);
 }
 
 
@@ -853,22 +853,22 @@ void bvsBinom(int *X,double *Z,double *alpha,double *beta,int *accept_beta,int *
  
   PutRNGstate();
 
-  Free(C1Z);                   /* n x (k+1) cbind(1, Z)*/
-  Free(ZtZ);                  /* (k+1) x (k+1) */
-  Free(invZtZ);              /* (k+1) x (k+1) */
-  Free(invSigmaBeta0);      /* k+1 */
-  Free(ZtBeta);            /* n x p*/
-  Free(ZtBeta_p);         /* n x p*/
-  Free(Zbeta);            /* p*/
-  Free(Zbeta_p);         /* p*/
-  Free(alphaBeta);       /* p x (k+1) */
-  Free(alphaBeta2);     /* p x (k+1) */
-  Free(alphaBeta_p);   /* p x (k+1) */
-  Free(beta_m);       /* mean beta */
-  Free(beta_p);
-  Free(tempab);
-  Free(tempab_p);
-  Free(gamma_p);
+  R_Free(C1Z);                   /* n x (k+1) cbind(1, Z)*/
+  R_Free(ZtZ);                  /* (k+1) x (k+1) */
+  R_Free(invZtZ);              /* (k+1) x (k+1) */
+  R_Free(invSigmaBeta0);      /* k+1 */
+  R_Free(ZtBeta);            /* n x p*/
+  R_Free(ZtBeta_p);         /* n x p*/
+  R_Free(Zbeta);            /* p*/
+  R_Free(Zbeta_p);         /* p*/
+  R_Free(alphaBeta);       /* p x (k+1) */
+  R_Free(alphaBeta2);     /* p x (k+1) */
+  R_Free(alphaBeta_p);   /* p x (k+1) */
+  R_Free(beta_m);       /* mean beta */
+  R_Free(beta_p);
+  R_Free(tempab);
+  R_Free(tempab_p);
+  R_Free(gamma_p);
 }
 
 /*if tryz is accepted, accept = accept + 1; function for iClusterBayes */
@@ -973,7 +973,7 @@ void metroMix6d(double *zi,dataType *dt1,dataType *dt2,dataType *dt3,dataType *d
     *accept = *accept + 1;
   }
 
-  Free(tryz); 
+  R_Free(tryz); 
 }
 
 /* This function is modified from mcmcMix in the iClusterPlus.c; this fun can handle 6 data sets */
@@ -1649,7 +1649,7 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
   scale = 1.0/nthin;
   dvscale(sumMeanZ,nk,scale);
   dvcopy(meanZ,sumMeanZ,nk);
-  Free(sumMeanZ);
+  R_Free(sumMeanZ);
 
   if(ndt > 0){
     ivcopy(gamma0,sumGamma0,p0);
@@ -1663,7 +1663,7 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
       dvscale(sumsig0,p0,scale);
       dvcopy(sigma0,sumsig0,p0); 
     }
-    Free(gb0);
+    R_Free(gb0);
   }
 
   if(ndt > 1){
@@ -1678,7 +1678,7 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
       dvscale(sumsig1,p1,scale);
       dvcopy(sigma1,sumsig1,p1);
     }
-    Free(gb1);
+    R_Free(gb1);
   }
 
   if(ndt > 2){
@@ -1693,7 +1693,7 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
       dvscale(sumsig2,p2,scale);
       dvcopy(sigma2,sumsig2,p2);
     }
-    Free(gb2);
+    R_Free(gb2);
   }
 
   if(ndt > 3){
@@ -1708,7 +1708,7 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
       dvscale(sumsig3,p3,scale);
       dvcopy(sigma3,sumsig3,p3);
     }
-    Free(gb3);
+    R_Free(gb3);
   }
 
   if(ndt > 4){
@@ -1723,7 +1723,7 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
       dvscale(sumsig4,p4,scale);
       dvcopy(sigma4,sumsig4,p4);
     }
-    Free(gb4);
+    R_Free(gb4);
   }
 
   if(ndt > 5){
@@ -1738,43 +1738,43 @@ void mcmcBayes(double *meanZ,double *lastZ,int *acceptZ,int *nkZbd,double *sdev,
       dvscale(sumsig5,p5,scale);
       dvcopy(sigma5,sumsig5,p5);
     }
-    Free(gb5);
+    R_Free(gb5);
   }
   
-  Free(sumGamma0);
-  Free(sumAcceptGamma0);
-  Free(sumAcceptBeta0);
-  Free(sumGamma1);
-  Free(sumAcceptGamma1);
-  Free(sumAcceptBeta1);
-  Free(sumGamma2);
-  Free(sumAcceptGamma2);
-  Free(sumAcceptBeta2); 
-  Free(sumGamma3);
-  Free(sumAcceptGamma3);
-  Free(sumAcceptBeta3);
-  Free(sumGamma4);
-  Free(sumAcceptGamma4);
-  Free(sumAcceptBeta4);
-  Free(sumGamma5);
-  Free(sumAcceptGamma5);
-  Free(sumAcceptBeta5);   
-  Free(suma0);
-  Free(suma1);
-  Free(suma2);
-  Free(suma3);
-  Free(suma4);
-  Free(suma5);
-  Free(sumb0);
-  Free(sumb1);
-  Free(sumb2);
-  Free(sumb3);
-  Free(sumb4);
-  Free(sumb5);
-  Free(sumsig0);
-  Free(sumsig1);
-  Free(sumsig2);
-  Free(sumsig3);
-  Free(sumsig4);
-  Free(sumsig5);  
+  R_Free(sumGamma0);
+  R_Free(sumAcceptGamma0);
+  R_Free(sumAcceptBeta0);
+  R_Free(sumGamma1);
+  R_Free(sumAcceptGamma1);
+  R_Free(sumAcceptBeta1);
+  R_Free(sumGamma2);
+  R_Free(sumAcceptGamma2);
+  R_Free(sumAcceptBeta2); 
+  R_Free(sumGamma3);
+  R_Free(sumAcceptGamma3);
+  R_Free(sumAcceptBeta3);
+  R_Free(sumGamma4);
+  R_Free(sumAcceptGamma4);
+  R_Free(sumAcceptBeta4);
+  R_Free(sumGamma5);
+  R_Free(sumAcceptGamma5);
+  R_Free(sumAcceptBeta5);   
+  R_Free(suma0);
+  R_Free(suma1);
+  R_Free(suma2);
+  R_Free(suma3);
+  R_Free(suma4);
+  R_Free(suma5);
+  R_Free(sumb0);
+  R_Free(sumb1);
+  R_Free(sumb2);
+  R_Free(sumb3);
+  R_Free(sumb4);
+  R_Free(sumb5);
+  R_Free(sumsig0);
+  R_Free(sumsig1);
+  R_Free(sumsig2);
+  R_Free(sumsig3);
+  R_Free(sumsig4);
+  R_Free(sumsig5);  
 }
