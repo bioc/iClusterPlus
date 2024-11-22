@@ -1,7 +1,7 @@
 Package: iClusterPlus
 Title: Integrative clustering of multi-type genomic data
-Version: 1.43.0
-Date: 2023-02-25
+Version: 1.43.1
+Date: 2024-11-22
 Depends: R (>= 4.1.0), parallel
 Suggests: RUnit, BiocGenerics
 Author: Qianxing Mo, Ronglai Shen
@@ -11,4 +11,4 @@ Description: Integrative clustering of multiple genomic data using a
 LazyData: yes
 LazyDataCompression: bzip2
 License: GPL (>= 2)
-biocViews: Microarray, Clustering
+biocViews: Multi-omics, Clustering
