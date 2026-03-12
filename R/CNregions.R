@@ -23,7 +23,7 @@
 
 #recommend epsilon=1/n
 
-CNregions=function(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL, frac.overlap=0.5, rmSmallseg=TRUE, nProbes=15){
+CNregions=function(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL, frac.overlap=0.5, rmSmallseg=TRUE, nProbes=5){
   
   colnames(seg)=c("sample","chromosome","start","end","num.mark","seg.mean")
   seg = subset(seg, chromosome<=22)
@@ -101,7 +101,7 @@ CNregions=function(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL, fr
     #u.end=sort(unique(subdata$end))[unlist(u.end)]
     u.end=c(u.end, max(u.se))  
           
-    #compute mean sqaured distance between adjacent rows
+    #compute mean squared distance between adjacent rows
     adjrow.dist=apply(sqrt(diff(outi)^2),1,mean) 
     #add row 1-1 to recover the original length
     adjrow.dist=c(0, adjrow.dist) 
