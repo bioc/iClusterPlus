@@ -1,7 +1,8 @@
 /* Qianxing Mo,Department of Biostatistics & Bioinformatics, Moffitt Cancer Center */
-/* Code programs for iCluster and giCluster
+/* Core programs for iCluster and giCluster
    2nd last updated 8/6/2011 
-   last updated 12/7/2012, change logp to logpnull, logq to logqnull
+   Updated 12/7/2012, change logp to logpnull, logq to logqnull
+   updated 04/28/2025: Fix parameter lambda passed to C program, which was originally hard coded. 
 */
 /*iCluster utility function */
 /* utility.c derived from util.c; dataType and fillData() has been changed  */
@@ -25,7 +26,6 @@
    #include <R_ext/Rdynload.h>
    #include <R_ext/Utils.h>
 */
-
 
 #define dim(A) INTEGER(coerceVector(getAttrib(A,R_DimSymbol),INTSXP))
 
@@ -547,41 +547,25 @@ void  Mstep_glasso(int *p, int *k, int *n,double *B, double *X, double *Phivec,
 
   dvtom(bm,B,brow,bcol);
   dvtom(xm,X,xrow,xcol);
-  /* printvec(B,20); */
-  /*  printmatrix(bm,10,2);   */
-  /*  printmatrix(xm,10,8); */
-  for(j=0; j< (brow); j++){
-    /* j=0;
-    dvcopy(w,lam,ezztrow);
-    dvscale(w,ezztrow,Phivec[j]/sqrt(vecsum2(bm[j],bcol))); */
-    w = Phivec[j]*(*lam)/sqrt(vecsum2(bm[j],bcol)); 
-    /*   printf("-w-\n");
-	 printvec(w,ezztrow); */
 
+  for(j=0; j< (brow); j++){
+    w = Phivec[j]*(*lam)/sqrt(vecsum2(bm[j],bcol)); 
     dvcopy(ezzt,EZZt,ezztrow*ezztrow);
     diagplus(ezzt,ezztrow,w);
     diagm(IM,ezztrow,1);
-    /*
-    printf("-EZZt-\n");
-    printvec(ezzt,ezztrow*ezztrow);
-    */
+
     F77_CALL(dgesv)(&ezztrow,&ezztrow,ezzt,&ezztrow,IPIV,IM,&ezztrow,&INFO);
     F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy FCONE);  
     F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy FCONE); 
-    /*   printvec(tempv2,ezztrow); */
     dvcopy(bm[j],tempv2,ezztrow);
   } 
-  /*  printmatrix(bm,5,2); */
+
   editm(bm,(brow),(bcol),(*eps2));
   dmtov(B,bm,(brow),(bcol));
-  /*  printf("- Good end -\n"); */
-  /* printmatrix(bm,(brow),(bcol)); */
-  /* dvcopy(B,bv,(bcol)*(brow)); */
   dmfree(bm,brow);
   dmfree(xm,xrow);
   R_Free(IM);
   R_Free(ezzt);
-  /*  R_Free(phiv); */
   R_Free(tempv1);
   R_Free(tempv2);
   R_Free(IPIV);
@@ -620,38 +604,28 @@ void  Mstep_lasso(int *p, int *k, int *n,double *B, double *X, double *Phivec,
 
   dvtom(bm,B,brow,bcol);
   dvtom(xm,X,xrow,xcol);
-  /* printvec(B,20); */
-  /*  printmatrix(bm,10,2);   */
-  /*  printmatrix(xm,10,8); */
+ 
   for(j=0; j< (brow); j++){
     dvcopy(w,bm[j],ezztrow);
     fabsinv(w,w,ezztrow);
     dvscale(w,ezztrow,lam[0]*Phivec[j]);
     dvcopy(ezzt,EZZt,ezztrow*ezztrow);
     diagplusv(ezzt,ezztrow,w);
-    /*  diagplus(ezzt,ezztrow,lam[1]); */
     diagm(IM,ezztrow,1);
 
-    /*    printf("-EZZt-\n");
-	  printvec(ezzt,ezztrow*ezztrow); */
     F77_CALL(dgesv)(&ezztrow,&ezztrow,ezzt,&ezztrow,IPIV,IM,&ezztrow,&INFO);
     F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy FCONE);  
     F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy FCONE); 
-    /*  printvec(tempv2,ezztrow); */
     dvcopy(bm[j],tempv2,ezztrow);
   } 
-/*  printf("eps2 = %f",*eps2);
-    printmatrix(bm,5,2);  */
+
   editm(bm,(brow),(bcol),(*eps2));
   dmtov(B,bm,(brow),(bcol));
-  /*  printmatrix(bm,(brow),(bcol)); */
-  /*  dvcopy(B,bv,(bcol)*(brow));  */
-  /*  printf("- good 6 -\n"); */
+
   dmfree(bm,brow);
   dmfree(xm,xrow);
   R_Free(IM);
   R_Free(ezzt);
-  /*  R_Free(phiv); */
   R_Free(tempv1);
   R_Free(tempv2);
   R_Free(w);
@@ -691,9 +665,7 @@ void  Mstep_enet(int *p, int *k, int *n,double *B, double *X, double *Phivec,
 
   dvtom(bm,B,brow,bcol);
   dvtom(xm,X,xrow,xcol);
-  /* printvec(B,20); */
-  /*  printmatrix(bm,10,2);   */
-  /*  printmatrix(xm,10,8); */
+
   for(j=0; j< (brow); j++){
     dvcopy(w,bm[j],ezztrow);
     fabsinv(w,w,ezztrow);
@@ -703,26 +675,19 @@ void  Mstep_enet(int *p, int *k, int *n,double *B, double *X, double *Phivec,
     diagplus(ezzt,ezztrow,lam[1]);
     diagm(IM,ezztrow,1);
 
-    /*  printf("-EZZt-\n");
-	printvec(ezzt,ezztrow*ezztrow); */
     F77_CALL(dgesv)(&ezztrow,&ezztrow,ezzt,&ezztrow,IPIV,IM,&ezztrow,&INFO);
     F77_CALL(dgemv)(trans,&ezrow,&ezcol,&ONE,EZ,&ezrow, xm[j],&incx, &ZERO,tempv1, &incy FCONE);  
     F77_CALL(dgemv)(trans,&ezztrow,&ezztrow,&ONE,IM,&ezztrow,tempv1,&incx,&ZERO,tempv2,&incy FCONE); 
-    /*  printvec(tempv2,ezztrow); */
     dvcopy(bm[j],tempv2,ezztrow);
   } 
-/*  printf("eps2 = %f",*eps2);
-    printmatrix(bm,5,2); */
+
   editm(bm,(brow),(bcol),(*eps2));
   dmtov(B,bm,(brow),(bcol));
-  /*  printmatrix(bm,(brow),(bcol)); */
-  /*  dvcopy(B,bv,(bcol)*(brow));  */
-  /*  printf("- good 6 -\n"); */
+
   dmfree(bm,brow);
   dmfree(xm,xrow);
   R_Free(IM);
   R_Free(ezzt);
-  /*  R_Free(phiv); */
   R_Free(tempv1);
   R_Free(tempv2);
   R_Free(w);
@@ -776,10 +741,6 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
   dvinv(bv,pk,1.0);
   diagmv(W,pk,bv);
 
-  /* printvec(B,20); */
-  /* printmatrix(bm,10,2);   */
-  /* printmatrix(xm,10,8); */
-
   for(j=0; j< (*idlen); j++){
     dvcopy(tempv1,bm[id[j]-1],bcol); /*note C is indexed from 0 */
     dvsub(tempv1,bm[id[j]],bcol);
@@ -793,10 +754,7 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
     dvinv(tempv1,bcol,1.0);
     /* tempm = dvec(bcol*bcol); tempm = diag(1/tmp), tempm is a vector format of matrix; move this line to above in order to avoid warning */
     diagmv(tempm,bcol,tempv1);
-    /* if(j==0){
-           printvec(tempv1,bcol);
-	   printvec(tempm,bcol*bcol); 
-    } */
+
     tempID1 = 0; 
     kj = (*k)*id[j];
     for(colID = kj; colID <= (kj +(*k)-1); colID++){   
@@ -843,7 +801,7 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
       }
     }  
   }
-  /*  printmatrix(qtilde,5,5); */
+
   dvscale(W,pkpk,lam[0]);
   dvscale(L,pkpk,lam[1]);
   dvadd(W,L,pkpk);  /*W = P */
@@ -853,8 +811,7 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
   dvadd(W,MV,pkpk);
 
   diagm(IM,pk,1);   /* IM is identity vector */
-  /*  printf("-EZZt-\n");
-      printvec(EZZt,ezztrow*ezztrow); */
+
   F77_CALL(dgesv)(&pk,&pk,W,&pk,IPIV,IM,&pk,&INFO);
   F77_CALL(dgemv)(trans,&pk,&pk,&ONE,IM,&pk,ctilde,&incx,&ZERO,tempv2,&incy FCONE); 
 
@@ -888,7 +845,6 @@ void  Mstep_flasso(int *p, int *k,double *B, double *Phivec, double *EXZt,
   R_Free(ctilde);
   R_Free(tempC);
   R_Free(bv);
-  /*  R_Free(phiv); */
   R_Free(tempv1);
   R_Free(tempv2);
   R_Free(IPIV);
@@ -959,22 +915,10 @@ void lyap(double *B, double *P, double *Q, double *C, int *m, int *n){
 
   eigen(P,m,lamvec,U);
   eigen(Q,n,muvec,V);
-  /* 
-  printf("- V -\n");
-  printvec(V,(*n)*(*n));
-  printf("- Eigen Vector -\n");
-  printvec(lamvec,10);
-  printf("- Eigen Values -\n");
-  printvec(muvec,*n); 
-  */
+
   invsqm2(tempm, U, m); /*Note U is NOT change on exit */
   F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,C,m,V,n,&beta,tempv,m FCONE FCONE);
-  /* printvec(tempv,10); */
   F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,tempm,m,tempv,m,&beta,ctilde,m FCONE FCONE);
-  /*
-  printf("-Ctilde 1 -\n");
-  printvec(ctilde, 10);
-  */
 
   for(i=0; i<(*n); i++){
     for(j=0; j<(*m); j++){
@@ -982,12 +926,7 @@ void lyap(double *B, double *P, double *Q, double *C, int *m, int *n){
     }
   }
   invsqm(invV, V, n);
-  /*
-  printf(" - btilde - \n");
-  printvec(btilde,10);
-  printf("- V -\n");
-  printvec(invV,(*n)*(*n));
-  */
+
   F77_CALL(dgemm)(transa,transb,m,n,n,&alpha,btilde,m,invV,n,&beta,tempv,m FCONE FCONE);
   F77_CALL(dgemm)(transa,transb,m,n,m,&alpha,U,m,tempv,m,&beta,B,m FCONE FCONE);
   R_Free(U);
@@ -1061,10 +1000,7 @@ void  Mstep_gflasso(int *p,int *k,double *B,double *Phivec,double *EXZt,
   dmtov(MV,M,*p,*p);
  
   dvsub(L,MV,pp);
-  /*
-  printf("- L - \n");
-  printvec(L,10);
-  */
+
   dvscale(W,pp,lam[0]);
   dvscale(L,pp,lam[1]);
   dvadd(W,L,pp);  /*W = P */
@@ -1072,10 +1008,7 @@ void  Mstep_gflasso(int *p,int *k,double *B,double *Phivec,double *EXZt,
   phi = dvec(pp);
   diagmv(phi,*p,Phivec);
   F77_CALL(dgemm)(transa,transb,p,p,p,&alpha,phi,p,W,p,&beta,MV,p FCONE FCONE);
-  /*
-  printf("- P -\n");
-  printvec(MV,108);
-  */
+
   lyap(B, MV,EZZt,EXZt,p,k);
   for(i=0; i<(brow*bcol); i++){
     if(fabs(B[i])<(*eps2)){
@@ -1102,10 +1035,9 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
 		  int *lenID){
 
   char *transN="N",*transT="T";
-  int i, j,kk,pk,s,t; /* pp, */
+  int i, j,kk,pk,s,t, lbdID; /* pp, */
   int ij;
   double *btp,*btpb, *EXZt,*tempX,*tempm0,*tempm1,*tempm2,*BOld,*PhivecOld, *XtXdiag; /* *tempm3, */
-  double lbd1,lbd4,*lbd2,*lbd3,*lbd5;
   double alpha, beta,absdif;
   double ninv;
 
@@ -1118,8 +1050,6 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
 
   kk = (*k)*(*k);
   pk = (*p)*(*k);
-  /* kn = (*k)*(*n); */
-  /* pp = (*p)*(*p); */
 
   btp = dvec(pk);
   btpb = dvec(kk);
@@ -1127,27 +1057,13 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
   tempm0 = dvec(*p);
   tempm1 = dvec(kk);
   tempm2 = dvec(pk);
-  // tempm3 = dvec(pp);
   BOld = dvec(pk);
   PhivecOld = dvec(*p);
   XtXdiag = dvec(*p);
 
   dvcopy(BOld,B,pk);
   dvcopy(PhivecOld,Phivec,*p);
-
-  lbd2 = dvec(2);
-  lbd3 = dvec(2);
-  lbd5 = dvec(2);
-
-  lbd1 = lambda[0];        /* lasso */
-  lbd2[0]=lambda[1];       /* Enet  */
-  lbd2[1] = lambda[2];
-  lbd3[0]=lambda[3];      /* flasso */
-  lbd3[1] = lambda[4];
-  lbd4 = lambda[5];       /* glasso */
-  lbd5[0] = lambda[6];   /* gflasso */
-  lbd5[1] = lambda[7];
-
+    
   s=0;
   for(t=0; t<(*lenT); t++){
     xlist[t] = dvec((*n)*pvec[t]);
@@ -1159,16 +1075,12 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     dmtranm(xmt,xm,*n,pvec[t]);
     dmtov(xlist[t],xmt,pvec[t],*n);
     s = s+pvec[t];
-    if(t==0){
-      /*   printvec(xlist[t],pvec[t]*(*n)); */
-    }
     dmfree(xm,*n);
     dmfree(xmt,pvec[t]);
     R_Free(tempX);
     phi[t] = dvec(pvec[t]);
     tempB[t] = dvec(pvec[t]*(*k));
     tempEXZt[t] = dvec(pvec[t]*(*k));
-    /*    printf("- %d - \n",t); */
   }
   
   while((*dif) > (*eps) && (*iter) <(*maxiter)){ 
@@ -1186,29 +1098,9 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,btp,p,B,p,&beta,btpb,k FCONE FCONE);
  
     diagplus(btpb,*k,1);
-    if((*iter)==0){
-      /*     printf("- btpb -\n");
-	     printvec(btpb,kk); */
-    }
- 
-    invsqm(tempm1,btpb,k);  /* solve(BtinvPhiB); BtinvPhiB is not used anymore,so use invsqm  */
-    if((*iter)==0){
-      /*   printf("- inv btpb -\n");
-	   printvec(tempm1,kk); */
-    }
-   
-    F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,btp,p,tempm1,k,&beta,tempm2,p FCONE FCONE); /*temp2 = tmp */
-    if(*iter==0){
-      /*   printf("- tmp -\n");
-	   printvec(tempm2, 528); */
-    }
-   
-    F77_CALL(dgemm)(transT,transT,k,n,p,&alpha,tempm2,p,X,n,&beta,EZ,k FCONE FCONE); /* EZ = t(tmp)%*%t(X) */
-    if((*iter)==0){
-      /*   printf("- EZ -\n");
-	   printvec(EZ, 10); */
-    }
-    
+    invsqm(tempm1,btpb,k);  /* solve(BtinvPhiB); BtinvPhiB is not used anymore,so use invsqm  */ 
+    F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,btp,p,tempm1,k,&beta,tempm2,p FCONE FCONE); /*temp2 = tmp */  
+    F77_CALL(dgemm)(transT,transT,k,n,p,&alpha,tempm2,p,X,n,&beta,EZ,k FCONE FCONE); /* EZ = t(tmp)%*%t(X) */  
     F77_CALL(dgemm)(transT,transT,p,k,n,&alpha,X,n,EZ,k,&beta,EXZt,p FCONE FCONE); /* EZZt = t(X)%*%t(EZ) */
     F77_CALL(dgemm)(transT,transN,k,k,p,&alpha,B,p,tempm2,p,&beta,EZZt,k FCONE FCONE);
     dvscale(EZZt,kk,-1.0);
@@ -1216,63 +1108,42 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     dvscale(EZZt,kk,*n);
     F77_CALL(dgemm)(transN,transT,k,k,n,&alpha,EZ,k,EZ,k,&beta,tempm1,k FCONE FCONE);
     dvadd(EZZt,tempm1,kk);
-    if((*iter)==0){
-      /*   printf("- EZZt -\n");
-	   printvec(EZZt, kk); */
-    }   
 
     s=0;
+    lbdID = 0; /* lbdID used to track lambda ID */
     for(t=0; t<(*lenT); t++){
       /*    printf("s = %d, %d\n",s, s+pvec[t]-1); */
       dmsect(tempB[t],B,*p,s,(s+pvec[t]-1),0,(*k-1));
       dvsect(phi[t],Phivec,s,(s+pvec[t]-1));
-      if(method[t] == 1){
-	Mstep_lasso(&(pvec[t]),k,n,tempB[t],xlist[t],phi[t],EZZt,EZ,&lbd1,eps2);
-	/*	if(*iter == 1 && t==0){
-	  printvec(tempB[t],pvec[t]*(*k));
+      if(method[t] == 1){ /* lasso: lambda 1 parameter */
+	Mstep_lasso(&(pvec[t]),k,n,tempB[t],xlist[t],phi[t],EZZt,EZ,&lambda[lbdID],eps2);
+	/*if(*iter == 1){
+	  printvec(&lambda[lbdID],1);
 	  } */
+	lbdID = lbdID + 1;
 	dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1));
-      }else if(method[t] == 2){
-	Mstep_enet(&(pvec[t]),k,n,tempB[t],xlist[t],phi[t],EZZt,EZ,lbd2,eps2);
+      }else if(method[t] == 2){  /* enet: lambda 2 parameter */
+	Mstep_enet(&(pvec[t]),k,n,tempB[t],xlist[t],phi[t],EZZt,EZ,&lambda[lbdID],eps2);
+	lbdID = lbdID + 2;
 	dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1)); 
-      }else if(method[t] == 3){
+      }else if(method[t] == 3){  /* flasso: lambda 2 parameter */
 	dmsect(tempEXZt[t],EXZt,*p,s,(s+pvec[t]-1),0,(*k-1));
-	Mstep_flasso(&(pvec[t]),k,tempB[t],phi[t],tempEXZt[t],EZZt,lbd3,eps2,ID,lenID); 
+	Mstep_flasso(&(pvec[t]),k,tempB[t],phi[t],tempEXZt[t],EZZt,&lambda[lbdID],eps2,ID,lenID);
+	lbdID = lbdID + 2;
 	dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1));
-      }else if(method[t] == 4){
-	Mstep_glasso(&(pvec[t]),k,n,tempB[t],xlist[t],phi[t],EZZt,EZ,&lbd4,eps2);
+      }else if(method[t] == 4){ /* glasso: lambda 1 parameter */
+	Mstep_glasso(&(pvec[t]),k,n,tempB[t],xlist[t],phi[t],EZZt,EZ,&lambda[lbdID],eps2);
+	lbdID = lbdID + 1;
 	dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1));
-      }else if(method[t] == 5){
+      }else if(method[t] == 5){ /* gflasso: lambda 2 parameter */
 	dmsect(tempEXZt[t],EXZt,*p,s,(s+pvec[t]-1),0,(*k-1));
-	Mstep_gflasso(&(pvec[t]),k,tempB[t],phi[t],tempEXZt[t],EZZt,lbd5,eps2,ID,lenID); 
+	Mstep_gflasso(&(pvec[t]),k,tempB[t],phi[t],tempEXZt[t],EZZt,&lambda[lbdID],eps2,ID,lenID);
+	lbdID = lbdID + 2;
 	dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1));
       }
       /*  dmreplace(B,tempB[t],*p,s,(s+pvec[t]-1),0,(*k-1)); */
       s = s + pvec[t];
     }
-
-    // this block is commented out since the computation can be done more efficiently  
-    // F77_CALL(dgemm)(transN,transT,p,p,k,&alpha,EXZt,p,B,p,&beta,tempm3,p);
-    // diagv(tempm0,tempm3,*p);
-    // 
-    // /* diagonal of t(X) %*% X */
-    // dvcopy(XtXdiag,xtxdiag,*p);
-    // /* diagonal of t(X) %*% X - EXZt%*%t(B) */
-    // dvsub(XtXdiag,tempm0,*p);
-    // /* diagonal of t(X) %*% X - EXZt%*%t(B) - B %*% t(EXZt) */
-    // dvsub(XtXdiag,tempm0,*p);
-    // 
-    // F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,B,p,EZZt,k,&beta,tempm2,p); /* B%*%EZZt */
-    // F77_CALL(dgemm)(transN,transT,p,p,k,&alpha,tempm2,p,B,p,&beta,tempm3,p);
-    // diagv(tempm0,tempm3,*p);
-    // dvadd(XtXdiag,tempm0,*p);
-    // dvscale(XtXdiag,*p,1.0/(*n));
-    // dvcopy(Phivec,XtXdiag,*p);
-    // /*    
-    // if((*iter)==0){
-    //   printf("- Phivec -\n");
-    //   printvec(XtXdiag, 20);
-    // }      
     
     /* direct computation of Phivec; don't need matrix product for just the diagonal */
     F77_CALL(dgemm)(transN,transN,p,k,k,&alpha,B,p,EZZt,k,&beta,tempm2,p FCONE FCONE); /* B%*%EZZt */
@@ -1313,13 +1184,9 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
   R_Free(tempm0);
   R_Free(tempm1);
   R_Free(tempm2);
-  // R_Free(tempm3);
   R_Free(BOld);
   R_Free(PhivecOld);
   R_Free(XtXdiag);
-  R_Free(lbd2);
-  R_Free(lbd3);
-  R_Free(lbd5); 
   
   for(t=0; t<(*lenT); t++){
     R_Free(xlist[t]);
@@ -1327,51 +1194,7 @@ void iClusterCore(int *p, int *k, int *n, double *xtxdiag, double *X,double *B,d
     R_Free(tempB[t]);
     R_Free(tempEXZt[t]);
   }
-  /*
-  R_Free(xlist);
-  R_Free(phi);
-  R_Free(tempB);
-  R_Free(tempEXZt);
-  */
 }
-
-/*
-SEXP invsqm(SEXP A, SEXP B){
-  int i, n, *dimA, *IPIV, INFO;
-  double *aptr, *bptr, *ansptr;
-  SEXP ans;
-  dimA = dim(A);
-  n = dimA[0];
-  PROTECT(ans = allocMatrix(REALSXP,dimA[0],dimA[1]));
-  ansptr = REAL(ans);
-  aptr = REAL(A);
-  bptr = REAL(B);
-  INFO = 0;
-  IPIV = (int *)R_alloc(n, sizeof(int));
-  F77_CALL(dgesv)(&n,&n,aptr,&n,IPIV,bptr,&n,&INFO);
-  ansptr = aptr;
-  return(ans);
-}
-
-SEXP testfun(SEXP A){
-  int i,j,*dimA;
-  double *pta, v=0;
-  dimA = dim(A);
-  PROTECT(A=coerceVector(A,REALSXP));
-  pta = REAL(A);
-
-  for(i=0; i< dimA[0]; i++){
-    for(j=0; j < dimA[1]; j++){
-      v += pta[i+j*dimA[0]];
-      printf("%f ",pta[i + j*dimA[0]]);
-    }
-    printf("\n");
-  }
-  UNPROTECT(1);
-  return R_NilValue;
-}
-
-*/
 
 
 /* function for debuging */

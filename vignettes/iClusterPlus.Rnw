@@ -17,10 +17,10 @@
 \setlength{\evensidemargin}{0.25in}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \setkeys{Gin}{width=0.99\textwidth}
 
-\title{\bf iClusterPlus: integrative clustering of multiple genomic
-  data sets}
+\title{\bf iClusterPlus: integrative clustering analysis of multi-omics data}
 
 \author{Qianxing Mo$^1$ and Ronglai Shen$^2$}
 
@@ -39,27 +39,41 @@ Memorial Sloan-Kettering Cancer Center\\
 \tableofcontents
 
 \section{Introduction}
-Programs iClusterPlus and iClusterBayes are developed for integrative
-clustering analysis of multi-type genomic data, which are significant
-extension of the iCluster program (Shen, Olshen and Ladanyi, 2009). Multi-type genomic data arise from the experiments where biological samples (e.g., tumor
-samples) are analyzed by multiple techniques, for instance, array comparative genomic hybridization (aCGH), gene expression microarray, RNA-seq and DNA-seq, and so on.   
-Examples of these data can be obtained from the Cancer Genome Atlas (TCGA) (\url{http://cancergenome.nih.gov/}).  \\
+R package \textit{iClusterPlus} was developed to identify integrative molecular subtypes of cancer and subtype-specific driving features using multi-omics data.  Multi-omics data are typically generated from the experiments in which tumor samples are analyzed by multiple technologies, such as array comparative genomic hybridization (aCGH), gene expression microarrays, RNA sequencing (RNA-seq) and DNA sequencing (DNA-seq).  Examples of these multi-omics datasets can be obtained from the Cancer Genome Atlas (TCGA) (\url{http://cancergenome.nih.gov/}).  \\
 
 \noindent
-The iClusterPlus User's guide can be obtained from the Bioconductor web page.
-If you are using Unix/Linux, you can get the manual by typing the following code in R Console.
-\begin{Schunk}
-\begin{Sinput}
-> if (!requireNamespace("BiocManager", quietly=TRUE))
-    > install.packages("BiocManager")
-> BiocManager::install("iClusterPlus")
-> library(iClusterPlus)
-> iManual()
-\end{Sinput}
-\end{Schunk}
+The major functions in the package (Bioconductor version <= 3.22) include \textit{iCluster2}, \textit{tune.iCluster2}, \textit{iClusterPlus}, \textit{tune.iClusterPlus}, \textit{iClusterBayes} and \textit{tune.iClusterBayes}.  Example usages of these functions can be found in the User's guide (\textbf{iManual.pdf}) on the iClusterPlus web page.  \\
 
 \noindent
-In addition, a simulation was performed to test the package.  For
-details, please see the R code in the
-\texttt{iClusterPlus/inst/unitTests/} folder.
+Starting from Bioconductor 3.23, updated functions including \textit{iCluster2b}, \textit{tune.iCluster2b}, \textit{iClusterPlus2} and \textit{iClusterBayes2} have been included in the package.  The updated functions provide improved computational efficiency.  For continuous multi-omics data, we recommend using \textit{iCluster2b} and \textit{tune.iCluster2b} to perform integrative clustering analysis.  For multi-omics data with mixed data types, we recommend using \textit{iClusterPlus2} and \textit{iClusterBayes2} for integrative clustering analysis.  Example usages of these functions can be found in the tutorials on the iClusterPlus web page.  
+
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Shen, Olshen, Ladanyi.}{2009}]{shen2012c}
+Ronglai Shen, Adam B. Olshen, Marc Ladanyi (2009). Integrative
+clustering of multiple genomic data types using a joint latent
+variable model with application to breast and lung cancer subtype
+analysis. Bioinformatics 25(22):2906-12. \\
+
+\bibitem[\protect\citeauthoryear{Shen et al.}{2012}]{shen2012b}
+Ronglai Shen, Qianxing Mo, Nikolaus Schultz, Venkatraman E. Seshan, Adam B. Olshen, Jason Huse, Marc Ladanyi, Chris Sander
+ (2012). Integrative Subtype Discovery in Glioblastoma Using
+ iCluster. PLOS ONE 7(4):e35236.\\
+
+\bibitem[\protect\citeauthoryear{Shen, Wang, Mo.}{2013}]{shen2013a}
+Ronglai Shen, Sijian Wang, Qianxing Mo. (2013).  Sparse Integrative
+Clustering of Multiple Omics Data Sets.  Annals of Applied Statistics
+7(1) 269-294.\\
+
+\bibitem[\protect\citeauthoryear{Mo and Shen.}{2013}]{mo2013}
+Qianxing Mo, Sijian Wang, Venkatraman E. Seshan, Adam B. Olshen, Nikolaus Schultz, Chris Sander, R. Scott Powers, Marc Ladanyi, and Ronglai Shen.  (2013).  Pattern discovery and cancer gene identification in integrated cancer genomic data. 
+Proc. Natl. Acad. Sci. USA 110(11):4245-50. \\
+
+\bibitem[\protect\citeauthoryear{Mo et al.}{2018}]{mo2018}
+Qianxing Mo, Ronglai Shen, Cui Guo, Marina Vannucci, Keith S Chan, Susan G Hilsenbeck. (2018).  
+A fully Bayesian latent variable model for integrative clustering analysis of multi-type omics data.
+Biostatistics 19(1):71-86. \\
+
+\end{thebibliography}
+
 \end{document} 

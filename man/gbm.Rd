@@ -1,5 +1,6 @@
 \name{gbm}
 \docType{data}
+\alias{gbm}
 \alias{gbm.seg}
 \alias{gbm.exp}
 \alias{gbm.mut}

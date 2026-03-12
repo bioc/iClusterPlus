@@ -6,7 +6,7 @@ This function is used to reduce copy number regions.
 }
 \usage{
 CNregions(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL,
-	       frac.overlap=0.5, rmSmallseg=TRUE, nProbes=15)
+	       frac.overlap=0.5, rmSmallseg=TRUE, nProbes=5)
 }
 \arguments{
   \item{seg}{DNAcopy CBS segmentation output.}
@@ -15,7 +15,7 @@ CNregions(seg, epsilon=0.005, adaptive=FALSE, rmCNV=FALSE, cnv=NULL,
   \item{adaptive}{Vector of length-m lasso penalty terms.}
   \item{rmCNV}{If TRUE, remove germline CNV.}
   \item{cnv}{A data frame containing germline CNV data.}
-  \item{frac.overlap}{A parameter needed to be explain.}
+  \item{frac.overlap}{Fraction of overlap between 2 segments.  If rmCNV=TRUE, overlapped segments will be removed if the overlapped fraction >= fra.overlap.} 
   \item{rmSmallseg}{If TRUE, remove small segment.}
   \item{nProbes}{The segment length threshold below which the segment will be removed if rmSmallseq = TRUE.}
 }

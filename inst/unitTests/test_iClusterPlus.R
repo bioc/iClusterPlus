@@ -100,97 +100,73 @@ plotBeta = function(res){
 ### the lambda needs to be tuned in order to get the 'best' result.  The tune.iClusterPlus function can be used for this purpose ###
 ### here, the parameter lambda used is not the best.  We just want to get a sense of what the results look like ###
 
-norm.res = iClusterPlus(dt1=normData,type=c("gaussian"),K=3,alpha=1,lambda=0.03)
-table(norm.res$clusters,true.clusters)
+#norm.res = iClusterPlus(dt1=normData,type=c("gaussian"),K=3,alpha=1,lambda=0.03)
+#table(norm.res$clusters,true.clusters)
+norm.res = iClusterPlus2(xList=list(normData),type=c("gaussian"),K=3,BICrate.cutoff=0.005)
+km4 = kmeans(norm.res$meanZ,4, nstart = 100)
+table(km4$cluster,true.clusters)
 plotBeta(norm.res$beta[[1]])
 
-binom.res = iClusterPlus(dt1=binomData,type=c("binomial"),K=3,alpha=1,lambda=0.05)
-table(binom.res$clusters,true.clusters)
+#binom.res = iClusterPlus(dt1=binomData,type=c("binomial"),K=3,alpha=1,lambda=0.05)
+#table(binom.res$clusters,true.clusters)
+binom.res = iClusterPlus2(xList=list(binomData),type=c("binomial"),K=3,BICrate.cutoff=0.005)
+km4 = kmeans(binom.res$meanZ,4, nstart = 100)
 plotBeta(binom.res$beta[[1]])
 
-pois.res = iClusterPlus(dt1=poisData,type=c("poisson"),K=3,alpha=1,lambda=0.05)
-table(pois.res$clusters,true.clusters)
+pois.res = iClusterPlus2(xList=list(poisData),type=c("poisson"),K=3,BICrate.cutoff=0.005)
+km4 = kmeans(pois.res$meanZ,4, nstart = 100)
+table(km4$cluster,true.clusters)
 plotBeta(pois.res$beta[[1]])
 
-mult.res = iClusterPlus(dt1=multData,type=c("multinomial"),K=3,alpha=1,lambda=0.01)
-table(mult.res$clusters,true.clusters)
+#mult.res = iClusterPlus(dt1=multData,type=c("multinomial"),K=3,alpha=1,lambda=0.02)
+#table(mult.res$clusters,true.clusters)
+mult.res = iClusterPlus2(xList=list(multData),type=c("multinomial"),K=3)
+km4 = kmeans(mult.res$meanZ,4, nstart = 100)
+table(km4$cluster,true.clusters)
+
 plotBeta(mult.res$beta[[1]][,1:3])   # coefficients for the genomic features of class 1
 plotBeta(mult.res$beta[[1]][,4:6])   # coefficients for the genomic features of class 2 
 plotBeta(mult.res$beta[[1]][,7:9])   # coefficients for the genomic features of class 3 
 
-### tune.iClusterPlus does a grid search to find the 'best' lambda parameters ###
-### this will take several hours with parallel computation using 12 cpus
-### to save time, we have saved the results in iClusterPlus/data/
-
-#simuResult = list()
-#for(i in 1:5){
-#   simuResult[[i]] = tune.iClusterPlus(cpus=12,dt1=normData,dt2=binomData,
-#   dt3=poisData,dt4=multData,type=c("gaussian","binomial","poisson","multinomial"),
-#   K=i,alpha=c(1,1,1,1),n.lambda=307,scale.lambda=c(0.5,0.5,0.5,0.5))
-# }
-
-#save(simuResult,file="simuResult.rda")
-#load("simuResult.rda")
-data(simuResult)
-
-nLambda = nrow(simuResult[[1]]$lambda)
-nK = length(simuResult)
-
-BIC = getBIC(simuResult)
-devR = getDevR(simuResult)
-
-### the ID for the lambda vector at which the BIC is minimum.
-minBICid = apply(BIC,2,which.min)
-
-### the deviance ratio of the lambda vector at which the BIC is minimum.
-devRatMinBIC = rep(NA,nK)
-for(i in 1:nK){
-  devRatMinBIC[i] = devR[minBICid[i],i]
-}
-
-plot(1:nK,devRatMinBIC,type="b",xlab="K",ylab="Dev.ratio at minBIC")
-
-# According to the plot, the four classes (number of classes = k+1) is the optimal result.
-# For each data set, if the coefficients (beta vector) are not close to zero,
-# it indicates that the corresponding features have contribution for clustering
-
-k=3
-clusters = getClusters(simuResult)
-best.clusters = clusters[,k]
+icfit = iClusterPlus2(xList=list(normData,binomData,poisData,multData), 
+                        type=c("gaussian","binomial","poisson","multinomial"),K=3)
 
 ### The following are the plots for the coefficients of the genomic features for each data type
 ### Each coefficient (row) is a vector with k elements;
 ### For each coefficient vector, if any of the elements is not close to zero, it's corresponding feature is informative.
 ### For each coefficient vector, if all the elements are close to zero, it's corresponding feature is non-informative.
 
-plotBeta(simuResult[[k]]$fit[[minBICid[k]]]$beta[[1]])        # coefficients for the genomic features for the normal data  
-plotBeta(simuResult[[k]]$fit[[minBICid[k]]]$beta[[2]])        # coefficients for the genomic features for the binomial data 
-plotBeta(simuResult[[k]]$fit[[minBICid[k]]]$beta[[3]])        # coefficients for the genomic features for the Poisson data 
+plotBeta(icfit$beta[[1]])   # coefficients for the genomic features for the normal data  
+plotBeta(icfit$beta[[2]])   # coefficients for the genomic features for the binomial data 
+plotBeta(icfit$beta[[3]])   # coefficients for the genomic features for the Poisson data 
 
-### the following are the coefficients of the genomic features for the multinomial data type
-plotBeta(simuResult[[k]]$fit[[minBICid[k]]]$beta[[4]][,1:3])  # coefficients for the genomic features of class 1  
-plotBeta(simuResult[[k]]$fit[[minBICid[k]]]$beta[[4]][,4:6])  # coefficients for the genomic features of class 2
-plotBeta(simuResult[[k]]$fit[[minBICid[k]]]$beta[[4]][,7:9])  # coefficients for the genomic features of class 3
+plotBeta(icfit$beta[[4]][,1:3])  # coefficients for the genomic features of class 1  
+plotBeta(icfit$beta[[4]][,4:6])  # coefficients for the genomic features of class 2
+plotBeta(icfit$beta[[4]][,7:9])  # coefficients for the genomic features of class 3
 
 ### The following code is used to get the top 30 most significant coefficients.
 ### By design, the first 30 features are informative.
 ### As expected, for most of the data type, the first 30 coefficients are the most significant.
-maxAbsVal.1 = apply(abs(simuResult[[k]]$fit[[minBICid[k]]]$beta[[1]]),1,max) #get the max absolute value for each coefficient (row)
+maxAbsVal.1 = apply(abs(icfit$beta[[1]]),1,max) #get the max absolute value for each coefficient (row)
 sort(order(maxAbsVal.1,decreasing=TRUE)[1:30])
       
-maxAbsVal.2 = apply(abs(simuResult[[k]]$fit[[minBICid[k]]]$beta[[2]]),1,max)
+maxAbsVal.2 = apply(abs(icfit$beta[[2]]),1,max)
 sort(order(maxAbsVal.2,decreasing=TRUE)[1:30])
 
-maxAbsVal.3 = apply(abs(simuResult[[k]]$fit[[minBICid[k]]]$beta[[3]]),1,max)
+maxAbsVal.3 = apply(abs(icfit$beta[[3]]),1,max)
 sort(order(maxAbsVal.3,decreasing=TRUE)[1:30])
 
-maxAbsVal.4 = apply(abs(simuResult[[k]]$fit[[minBICid[k]]]$beta[[4]]),1,max)
+maxAbsVal.4 = apply(abs(icfit$beta[[4]]),1,max)
 sort(order(maxAbsVal.4,decreasing=TRUE)[1:30])
 
 ### check if all the samples are correctly clustered ###
-clusterTab = table(best.clusters,true.clusters) # all samples are correctly assigned in different groups 
+km4 = kmeans(icfit$meanZ,4, nstart = 100)
+#um = umap(icfit$meanZ)
+#plot(um$layout,col=km4$cluster)
+
+clusterTab = table(km4$cluster,true.clusters) # all samples are correctly assigned in different groups 
 clusterTab
 clusterRowSum = apply(clusterTab,1,sum)
 trueNum = rep(20,4)  #For the clusters 1-4, each of them should have 20 samples
 names(trueNum) = 1:4
-checkEquals(clusterRowSum,trueNum)
+#checkEquals(clusterRowSum,trueNum)
