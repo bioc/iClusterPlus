@@ -1,5 +1,5 @@
 ---
-title: "Integrative clustering analysis of single cell multi-omics data"
+title: "iCluster analysis of single cell multi-omics data"
 author: 
   name: "Qianxing Mo"
   affiliation: "Department of Biostatistics and Bioinformatics <br> 
