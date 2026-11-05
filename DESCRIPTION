@@ -1,8 +1,8 @@
 Package: iClusterPlus
 Title: Integrative clustering of multi-type genomic data
-Version: 1.47.3
-Date: 2026-03-20
-Depends: R (>= 4.1.0), irlba, parallel
+Version: 1.49.1
+Date: 2026-10-29
+Depends: R (>= 4.1.0), irlba, parallel, Matrix
 Suggests: RUnit, BiocGenerics
 Author: Qianxing Mo, Ronglai Shen
 Maintainer: Qianxing Mo <qianxing.mo@moffitt.org>, Ronglai Shen <shenr@mskcc.org>

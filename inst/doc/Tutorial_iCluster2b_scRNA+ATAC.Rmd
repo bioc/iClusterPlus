@@ -1,0 +1,259 @@
+---
+title: "iCluster analysis of scRNA-seq + scATAC-seq data"
+author: 
+  name: "Qianxing Mo"
+  affiliation: "Department of Biostatistics and Bioinformatics <br> 
+  H. Lee Moffitt Cancer Center and Research Institute, Tampa, FL 33612"
+output:
+  html_document:
+    theme: united
+    df_print: kable
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r setup, include=FALSE}
+all_times <- list()  # store the time for each chunk
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      now <<- Sys.time()
+    } else {
+      res <- difftime(Sys.time(), now)
+      all_times[[options$label]] <<- res
+    }
+  }
+}))
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  time_it = TRUE,
+  error = TRUE
+)
+```
+In this tutorial, we demonstrate how to perform vertical integrative clustering (iCluster) analysis of single cell RNA-seq and ATAC-seq data using the iCluster2b function, which implements an updated iCluster method originally reported by [Shen, Wang and Mo. 2023](https://pubmed.ncbi.nlm.nih.gov/24587839/).  We use a paired scRNA-seq and scATAC-seq data measured for 10,412 PBMCs for iCluster analysis.  The paired data are publicly available on the [10x website](https://support.10xgenomics.com/single-cell-multiome-atac-gex/datasets/1.0.0/pbmc_granulocyte_sorted_10k), which include the following files.  
+
+* pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz         
+* pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5
+* pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz.tbi
+
+The paired data are used by [Seurat](https://satijalab.org/seurat/) to illustrate the Weighted Nearest Neighbor (WNN) method for integrative clustering of single cell multi-omics data.  We will follow the tutorial [WNN Analysis ](https://satijalab.org/seurat/articles/weighted_nearest_neighbor_analysis) to process the paired scRNA-seq and scATAC-seq data.  
+
+```{r packages, cache=FALSE}
+library(iClusterPlus)
+library(lattice)
+library(gplots)
+library(Seurat)
+library(SeuratData)
+library(cowplot)
+library(dplyr)
+library(Rphenograph)
+library(umap)
+library(mclust)
+library(MatrixGenerics)
+library(Matrix)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(GenomeInfoDb) #standardChromosomes
+library(Signac) #v1.16.0
+library(Azimuth)
+library(Silhouette)
+library(cluster)
+library(knitr)
+```
+
+The iCluster analysis of single cell multi-omics data can be carried out in the following 4 steps.  
+
+# Step 1: Processing data using the Seurat package
+We follow the Seurat's [WNN Analysis ](https://satijalab.org/seurat/articles/weighted_nearest_neighbor_analysis) tutorial to process the scRNA-seq and scATAC-seq data.  The processing workflow includes filtering, normalization, feature selection, scaling and dimension reduction for each dataset.
+```{r data procession}
+# The following are Seurat's codes to process the scRNA-seq and scATACT-seq data
+# read scRNA-seq and scATAC-seq data from the data folder of working directory
+inputdata.10x <- Read10X_h5("../pbmc_data/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
+
+# extract RNA and ATAC data
+rna_counts <- inputdata.10x$`Gene Expression`
+atac_counts <- inputdata.10x$Peaks
+
+# Create Seurat object
+pbmc <- CreateSeuratObject(counts = rna_counts)
+pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT-")
+
+# Add in the ATAC-seq data and only use peaks in standard chromosomes
+grange.counts <- StringToGRanges(rownames(atac_counts), sep = c(":", "-"))
+grange.use <- seqnames(grange.counts) %in% standardChromosomes(grange.counts)
+atac_counts <- atac_counts[as.vector(grange.use), ]
+annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+seqlevelsStyle(annotations) <- 'UCSC'
+genome(annotations) <- "hg38"
+
+# read ATAC Per fragment information file in the data folder of working directory
+frag.file <- "../pbmc_data/pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz"
+
+# create chromosome assay
+chrom_assay <- CreateChromatinAssay(
+   counts = atac_counts,
+   sep = c(":", "-"),
+   genome = 'hg38',
+   fragments = frag.file,
+   min.cells = 10,
+   annotation = annotations
+ )
+pbmc[["ATAC"]] <- chrom_assay
+
+#basic QC based on the number of detected molecules for RNA, ATAC and mitochondrial percentage.
+VlnPlot(pbmc,features=c("nCount_RNA", "nCount_ATAC", "percent.mt"), ncol=3,log=TRUE,pt.size = 0) + NoLegend()
+
+pbmc <- subset(
+  x = pbmc,
+  subset = nCount_ATAC < 7e4 &
+    nCount_ATAC > 5e3 &
+    nCount_RNA < 25000 &
+    nCount_RNA > 1000 &
+    percent.mt < 20
+)
+
+# RNA analysis 
+DefaultAssay(pbmc) <- "RNA"
+options(future.globals.maxSize= 850*1024^2) #calculate the size for an 850mb limit:
+pbmc <- SCTransform(pbmc, verbose = FALSE) %>% RunPCA() %>% RunUMAP(dims = 1:50, reduction.name = 'umap.rna', reduction.key = 'rnaUMAP_')
+
+# ATAC analysis
+# Seurat excludes the first dimension as this is typically correlated with sequencing depth
+DefaultAssay(pbmc) <- "ATAC"
+pbmc <- RunTFIDF(pbmc)
+pbmc <- FindTopFeatures(pbmc, min.cutoff = 'q0')
+pbmc <- RunSVD(pbmc) #reduction.name = "lsi
+pbmc <- RunUMAP(pbmc, reduction = 'lsi', dims = 2:50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
+
+# cell annotation using Azimuth package
+DefaultAssay(pbmc) <- "RNA"
+pbmc <- RunAzimuth(pbmc, reference = "pbmcref")
+```
+
+# Step 2: Perform iCluster modeling 
+The iCluster modeling generates a latent factor matrix (meanZ), which captures the major sources of variation of the multi-omics data (scRNA-seq and scATAC-seq).  As a result, the latent factor matrix can be used for sample clustering and visualization.
+```{r PCA variance, fig.height=6, fig.width = 10}
+
+# Select the top 20% most variable regions and merge the neighboring regions with gap width <=10000 bps
+atac <- mergeRegion(peak.ct=pbmc[["ATAC"]]$data,rm.prob=0.8,rm.isolate=FALSE,min.gapwidth=10000)
+dim(atac)
+
+# we use the normalized and scaled RNA-seq data (top 3000 genes) and top 10% most variable ATAC-seq features for iCluster analysis
+dim(pbmc[['SCT']]$scale.data)
+pbmcList <- list(RNA=t(pbmc[['SCT']]$scale.data),ATAC=t(as.matrix(atac)))
+rm(atac)
+
+# PCA variance plot 
+pcaVarPlot(pbmcList,K=100)
+```
+
+From the variance plot, we can see that the explained variance starts to level off around the 10th PC.  For iCluster modeling of single cell multi-omics data, we suggest selecting the number PCs based on the point at which the explained variance levels off.  In general, using the first 10 to 20 PCs is sufficient to distinguish major cell types.  Using higher-numbered PCs (e.g., 40-50) may help identify rare cell populations and capture more subtle heterogeneity.  Here, we select K=50 as the number of latent factors for iCluster modeling.  
+```{r iCluster analysis}
+# since features have been selected, we set lambda to a small value to minimize feature selection
+date()
+fit2 = iCluster2b(xList=pbmcList,K=50,lambda=list(0.1,0.1),method=c("lasso","lasso"))
+date()
+```
+
+# Step 3: Clustering of cells using the latent factor matrix
+We use the Louvain method implemented in the Rphenograph package to perform cell clustering analysis.  Then, we project the cells to a 2-dimensional space using UMAP for visualization. 
+```{r clustering and UMAP}
+## clustering of cells using Louvain method and the latent factor matrix generated by iCluster
+ic.graph <- Rphenograph(fit2$meanZ, k=30)
+tabclst <- table(membership(ic.graph[[2]]))
+
+## order the clusters based on cluster size
+clstlevels <- as.numeric(names(tabclst)[order(tabclst,decreasing = TRUE)])
+pbmc.iClusters <- factor(membership(ic.graph[[2]]),levels=clstlevels,labels=1:length(clstlevels))
+names(pbmc.iClusters) <- rownames(pbmcList$RNA)
+
+# Projecting cells to 2-dimensional space using UMAP
+ic.umap <- umap(fit2$meanZ)
+rownames(ic.umap$layout) <- rownames(pbmcList$RNA)
+colnames(ic.umap$layout) <- c("umap1","umap2")
+
+## put umap layout and cluster IDs into the Seurat object bm 
+pbmc[["ic.umap"]] <- CreateDimReducObject(embeddings = ic.umap$layout, key = "icumap_")
+pbmc$iClusters <- pbmc.iClusters 
+```
+
+# Step 4: Visualization of cell clusters 
+We use Seurat's function DimPlot to visualize the cells on a 2-dimensional UMAP space. 
+
+1. Visualization of cell clusters generated by iCluster analysis, alongside cell annotations  
+```{r iCluster.plot, fig.width = 10}
+ic.p1 <- DimPlot(pbmc,reduction="ic.umap",group.by="iClusters",label=TRUE,label.size=4,repel=TRUE) + 
+  NoLegend() + ggtitle("iClusters") + labs(x="UMAP_1",y="UMAP_2")
+
+ic.p2 <- DimPlot(pbmc, reduction="ic.umap",group.by="predicted.celltype.l2",label=TRUE,label.size=4, repel=TRUE) + 
+  NoLegend() + ggtitle("Cell types") + labs(x="UMAP_1",y="UMAP_2")
+
+ic.p1 + ic.p2
+```
+
+2. Heatmap of cell clusters generated by iCluster analysis.
+We show the heatmap of cell clusters generated by iCluster analysis using the top 25% of RNA features and top 10% ATAC features.  The ranking of RNA and ATAC features are based on the sum of the absolute value of the parameter (beta) in a decreasing order.
+```{r iCluster heatmap, fig.height=6, fig.width=11}
+col.scheme <- alist()
+col.scheme[[1]] <- bluered(256)
+col.scheme[[2]] <- bluered(256)
+
+fit2$clusters <- pbmc$iClusters
+ic.hm <- iClusterPlus::plotHeatmap(fit=fit2,xList=pbmcList,type=c("gaussian","gaussian"), 
+                     threshold=c(0.25, 0.10),feature.order=c(T,T),feature.scale=c(T,T),
+                     dist.method = "euclidean", hclust.method="ward.D",col.scheme = col.scheme,width=10,
+                     sparse=c(T,T),cap=c(0.99,0.99))
+```
+
+For comparison, we perform integrative clustering analysis using Seurat's WNN method.  For more details of WNN analysis, we refer users to the Seurat's tutorial ([Weighted Nearest Neighbor Analysis](https://satijalab.org/seurat/articles/weighted_nearest_neighbor_analysis)). 
+```{r MultiModalAnalysis}
+pbmc <- FindMultiModalNeighbors(pbmc, reduction.list = list("pca", "lsi"), dims.list = list(1:50, 2:50))
+pbmc <- RunUMAP(pbmc, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+pbmc <- FindClusters(pbmc, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
+```
+
+We visualize the cell clusters generated by Seurat WNN analysis, alongside cell annotations  
+```{r seurat clusters plot, fig.width=10}
+p3 <- DimPlot(pbmc, reduction="wnn.umap",group.by="seurat_clusters", label=TRUE,label.size=4,repel=TRUE) + 
+  NoLegend() + ggtitle("Seurat_clusters")
+
+p4 <- DimPlot(pbmc, reduction="wnn.umap",group.by="predicted.celltype.l2",label=TRUE,label.size=4,repel=TRUE) + 
+  NoLegend() + ggtitle("Cell types")
+
+p3 + p4
+```
+
+Finally, we compare the integrative clustering results of iCluster and Seurat WNN using normalized mutual information (NMI), adjusted rand index (ARI) and average silhouette width (ASW). In general, higher index values indicate better clustering performance.
+```{r iClusters vs. cell annoations}
+
+# comparison using normalized mutual information (NMI)
+compare(pbmc$predicted.celltype.l2, pbmc$iClusters, method = "nmi") 
+compare(pbmc$predicted.celltype.l2, pbmc$seurat_clusters, method = "nmi") 
+
+# Comparison using adjusted rand index 
+compare(pbmc$predicted.celltype.l2, pbmc$iClusters, method = "adjusted.rand") 
+compare(pbmc$predicted.celltype.l2, pbmc$seurat_clusters, method = "adjusted.rand") 
+
+# Comparison using average silhouette width
+sil.ic <- silhouette(as.numeric(pbmc$iClusters), dist(Embeddings(pbmc, reduction = "ic.umap")))
+summary(sil.ic)$avg.width 
+
+sil.wnn <- silhouette(as.numeric(pbmc$seurat_clusters), dist(Embeddings(pbmc, reduction = "wnn.umap")))
+summary(sil.wnn)$avg.width
+```
+
+Table of cell types vs. iClusters 
+```{r table of predicted cell type vs. iClusters}
+# table of annotated cell types and iClusters 
+icTable <- table(pbmc$predicted.celltype.l2,pbmc$iClusters)
+knitr::kable(icTable)
+```
+
+<details>
+  <summary>**Session Info**</summary>
+```{r}
+sessionInfo()
+```
+</details>
+
