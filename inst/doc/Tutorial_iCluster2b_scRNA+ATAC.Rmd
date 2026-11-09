@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
   error = TRUE
 )
 ```
-In this tutorial, we demonstrate how to perform vertical integrative clustering (iCluster) analysis of single cell RNA-seq and ATAC-seq data using the iCluster2b function, which implements an updated iCluster method originally reported by [Shen, Wang and Mo. 2023](https://pubmed.ncbi.nlm.nih.gov/24587839/).  We use a paired scRNA-seq and scATAC-seq data measured for 10,412 PBMCs for iCluster analysis.  The paired data are publicly available on the [10x website](https://support.10xgenomics.com/single-cell-multiome-atac-gex/datasets/1.0.0/pbmc_granulocyte_sorted_10k), which include the following files.  
+In this tutorial, we demonstrate how to perform vertical integrative clustering (iCluster) analysis of single cell RNA-seq and ATAC-seq data using the [iCluster2b](https://psb.stanford.edu/psb-online/proceedings/psb27/mo_q.pdf) function, which implements an updated iCluster method originally reported by [Shen, Wang and Mo. 2023](https://pubmed.ncbi.nlm.nih.gov/24587839/).  We use a paired scRNA-seq and scATAC-seq data measured for 10,412 PBMCs for iCluster analysis.  The paired data are publicly available on the [10x website](https://support.10xgenomics.com/single-cell-multiome-atac-gex/datasets/1.0.0/pbmc_granulocyte_sorted_10k), which include the following files.  
 
 * pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz         
 * pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5

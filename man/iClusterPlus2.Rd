@@ -50,7 +50,10 @@ iClusterPlus2(xList,type=c("gaussian","binomial","poisson","multinomial"),K=3,
 \references{
 Qianxing Mo, Sijian Wang, Venkatraman E. Seshan, Adam B. Olshen, Nikolaus Schultz, Chris Sander, R. Scott Powers, Marc Ladanyi, and Ronglai Shen.  (2013).  
 Pattern discovery and cancer gene identification in integrated cancer genomic data. 
-\emph{Proc. Natl. Acad. Sci. USA.} 110(11):4245-50. 
+\emph{Proc. Natl. Acad. Sci. USA.} 110(11):4245-50.
+
+Qianxing Mo, Adam B. Olshen.  Efficient Integration of Bulk and Single-Cell Multi-omics Data Using Latent Factor Models.  \emph{Pacific Symposium on Biocomputing 2027}, 721-733.
+https://psb.stanford.edu/psb-online/proceedings/psb27/mo_q.pdf
 }
 \keyword{models}
 

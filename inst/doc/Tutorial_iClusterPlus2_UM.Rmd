@@ -77,7 +77,7 @@ pcaVarPlot(xList=list(cn,methy25,mrna25),K=30)
 From the PCA variance plot, we see that the rate of decrease of the explained variance starts to slow down significantly after the 5th PC.  An optimal number of latent factors used for iCluster modeling can be chosen around the change point where the rate of decrease of the explained variance of the PCs starts to slow down significantly.  As an example, here, we choose K=7 as the number of latent factors for iCluster modeling of the UM multi-omics data.  It can be found the sample clustering results are quite consistent when K >= 7.
 
 # Step 2: Perform iCluster modeling 
-We first apply iClusterPlus2, an updated [iClusterPlus](https://pubmed.ncbi.nlm.nih.gov/23431203/) function to the UM multi-omics data.  The iCluster modeling generates a latent factor matrix (meanZ), which capture the major sources of variation of the multi-omics data.  As a result, the latent factor matrix can be used for sample clustering and visualization.
+We first apply [iClusterPlus2](https://psb.stanford.edu/psb-online/proceedings/psb27/mo_q.pdf), an updated [iClusterPlus](https://pubmed.ncbi.nlm.nih.gov/23431203/) function to the UM multi-omics data.  The iCluster modeling generates a latent factor matrix (meanZ), which capture the major sources of variation of the multi-omics data.  As a result, the latent factor matrix can be used for sample clustering and visualization.
 ```{r iClusterPlus2 analysis}
 set.seed(321)
 date()
@@ -210,9 +210,9 @@ p3 + p4
 It is well established that UM patients with chromosome 3 (chr3) loss have worse overall survival (OS) than those with normal chr3 status.  In the 4-cluster solution, it can be seen that the patient OS is separated according to the chr3 status.  In contrast, the cluster 3 in the 3-cluster solution contains patients with both normal and lost chr3, and its OS is therefore not clearly differentiated from that of the cluster 1.  Therefore, the 4-cluster solution provides better clinical relevance and interpretability.  
 
 # iCluster analysis using iCluster2b 
-If multi-omics data are continuous or can be transformed into a continuous format, users may use the iCluster2b function to perform iCluster analysis.  The iCluster2b function implements an updated integrative clustering method originally reported by [Shen, Wang and Mo. 2023](https://pubmed.ncbi.nlm.nih.gov/24587839/).  Users can use the tune.iCluster2b function to search optimal lasso shrinkage parameters for multi-omics data. In the following analysis, we exclude the somatic mutation data, which is binary.      
+If multi-omics data are continuous or can be transformed into a continuous format, users may use the iCluster2b function to perform iCluster analysis.  The iCluster2b function implements an updated integrative clustering method originally reported by [Shen, Wang and Mo. 2023](https://pubmed.ncbi.nlm.nih.gov/24587839/).  Users can use the [tune.iCluster2b](https://psb.stanford.edu/psb-online/proceedings/psb27/mo_q.pdf) function to search optimal lasso shrinkage parameters for multi-omics data. In the following analysis, we exclude the somatic mutation data, which is binary.      
 
-A. Perform iCluster modeling using iCluster2b on continuous multi-omics data.
+A. Perform iCluster modeling using tune.iCluster2b on continuous multi-omics data.
 ```{r iCluster2b}
 # tune.iCluster2b search optimal lasso parameter lambda from min.lambda to max.lambda for iCluster2b function
 date()

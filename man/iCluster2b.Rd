@@ -103,7 +103,10 @@ barplot(fit2$beta[[i]][,1])
 }
 \author{Qianxing Mo \email{qianxing.mo@moffitt.org},Ronglai Shen,Sijian Wang}
 \references{
-  Ronglai Shen, Sijian Wang, Qianxing Mo. (2013).  Sparse Integrative Clustering of Multiple Omics Data Sets. \emph{Annals of Applied Statistics.} 7(1):269-294
+Ronglai Shen, Sijian Wang, Qianxing Mo. (2013).  Sparse Integrative Clustering of Multiple Omics Data Sets. \emph{Annals of Applied Statistics.} 7(1):269-294
+
+Qianxing Mo, Adam B. Olshen.  Efficient Integration of Bulk and Single-Cell Multi-omics Data Using Latent Factor Models.  \emph{Pacific Symposium on Biocomputing 2027}, 721-733.
+  https://psb.stanford.edu/psb-online/proceedings/psb27/mo_q.pdf
 }
 \keyword{models}
 

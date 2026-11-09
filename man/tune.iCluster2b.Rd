@@ -37,6 +37,8 @@ tune.iCluster2b(xList,K=3,method=c("lasso","enet"),min.lambda=10,max.lambda=500,
 \author{Qianxing Mo \email{qianxing.mo@moffitt.org}}
 \references{
   Ronglai Shen, Sijian Wang, Qianxing Mo. (2013).  Sparse Integrative Clustering of Multiple Omics Data Sets. \emph{Annals of Applied Statistics.} 7(1):269-294
+  Qianxing Mo, Adam B. Olshen.  Efficient Integration of Bulk and Single-Cell Multi-omics Data Using Latent Factor Models.  \emph{Pacific Symposium on Biocomputing 2027}, 721-733.
+  https://psb.stanford.edu/psb-online/proceedings/psb27/mo_q.pdf
 }
 \keyword{models}
 
