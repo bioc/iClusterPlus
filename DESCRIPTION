@@ -1,6 +1,6 @@
 Package: iClusterPlus
 Title: Integrative clustering of multi-omics data
-Version: 1.49.3
+Version: 1.50.0
 Date: 2026-11-17
 Depends: R (>= 4.1.0), irlba, parallel, Matrix
 Suggests: RUnit, BiocGenerics
